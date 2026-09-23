@@ -32,6 +32,7 @@
                 <div class="d-flex justify-content-center mb-3">
                     <img src="{{ asset('images/cofee-bean.png') }}" alt="Image" style="max-width: 70%; height: auto;">
                 </div>
+                
                 <ul class="nav nav-pills flex-column mb-auto">
                     <li class="nav-item">
                         <a href="/home" class="nav-link fw-bold text-brown">Home</a>
@@ -57,7 +58,7 @@
 
                 </ul>
                 <hr>
-                <div>
+                <div class="text-center">
                     <a href="{{ route('logout') }}" class="nav-link text-brown fw-bold">Logout</a>
                 </div>
             </div>
