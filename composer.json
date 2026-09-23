@@ -47,7 +47,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "@php artisan dev"
+            "npm run dev:full"
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",

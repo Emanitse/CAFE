@@ -6,4 +6,9 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+        --color-brown: #66402E;
+        --color-nude: #F5E9DB;
 }
+
+.text-brown { color: #66402E; }
+
