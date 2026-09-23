@@ -17,4 +17,28 @@ Route::get('/home', function () {
     return view('components.home'); 
 });
 
+Route::get('/orders', function () {
+    return view('components.orders'); 
+});
+
+Route::get('/menu', function () {
+    return view('components.menu'); 
+});
+
+Route::get('/categories', function () {
+    return view('components.categories'); 
+});
+
+Route::get('/payments', function () {
+    return view('components.payments'); 
+});
+
+Route::get('/reports', function () {
+    return view('components.reports'); 
+});
+
+Route::get('/users', function () {
+    return view('components.users'); 
+});
+
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
