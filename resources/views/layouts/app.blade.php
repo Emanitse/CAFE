@@ -28,7 +28,7 @@
             <hr>
             <div>
               
-                <a href="#" class="nav-link text-brown">Logout</a>
+                <a href="{{ route('logout') }}" class="nav-link text-white">Logout</a>
             </div>
         </div>
 

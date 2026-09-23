@@ -28,7 +28,18 @@ class AuthController extends Controller
             return redirect('/home');
         }
 
-        // 5. If it fails, send them back with an error
+        
         return back()->with('error', 'Invalid username or password.');
+    }
+
+    public function logout(Request $request)
+    {
+        // Clear the specific session data
+        $request->session()->flush();
+        
+    
+        
+        // Redirect back to the login page
+        return redirect('/login');
     }
 }
