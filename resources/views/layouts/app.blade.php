@@ -28,7 +28,7 @@
             <hr>
             <div>
               
-                <a href="#" class="nav-link text-white">Logout</a>
+                <a href="#" class="nav-link text-brown">Logout</a>
             </div>
         </div>
 
