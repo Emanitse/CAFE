@@ -35,7 +35,7 @@
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
-                            <button type="submit" class=" bg-brown text-white w-100 py-2 rounded">Login</button>
+                            <button type="submit" class=" bg-coffee text-white w-100 py-2 rounded">Login</button>
                         </form>
                     </div>
                 </div>
