@@ -8,6 +8,7 @@ class MenuItem extends Model
 {
     protected $table = 'menuitems';
     protected $primaryKey = 'menuID';
+    public $timestamps = false;
 
     protected $fillable = [
         'categoryID',

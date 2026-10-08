@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/', function () {
     return view('login');
@@ -17,9 +18,8 @@ Route::get('/home', function () {
     return view('components.home'); 
 });
 
-Route::get('/orders', function () {
-    return view('components.orders'); 
-});
+Route::get('/orders', [OrderController::class, 'index']);
+Route::post('/orders/checkout', [OrderController::class, 'store']);
 
 Route::get('/menu', function () {
     return view('components.menu'); 

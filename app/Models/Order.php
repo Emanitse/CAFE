@@ -8,6 +8,7 @@ class Order extends Model
 {
     protected $table = 'orders';
     protected $primaryKey = 'orderID';
+    public $timestamps = false;
 
     protected $fillable = [
         'accountID',
