@@ -101,9 +101,50 @@ document.addEventListener('DOMContentLoaded', function() {
         totalDisplay.dataset.rawTotal = grandTotal;
     }
 
-    // 3. Checkout
-    document.getElementById('checkout-btn').addEventListener('click', async function() {
+    // 3. Checkout & Payment Modal Logic
+    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    const amountReceivedInput = document.getElementById('amountReceived');
+    const changeAmountInput = document.getElementById('changeAmount');
+    const completeBtn = document.getElementById('complete-payment-btn');
+
+    // Open Modal when Checkout is clicked
+    document.getElementById('checkout-btn').addEventListener('click', function() {
         const totalAmount = document.getElementById('total-amount-display').dataset.rawTotal;
+        document.getElementById('modal-total-display').textContent = `₱${parseFloat(totalAmount).toFixed(2)}`;
+        
+        // Reset modal fields
+        amountReceivedInput.value = '';
+        changeAmountInput.value = '0.00';
+        completeBtn.disabled = true;
+
+        paymentModal.show();
+    });
+
+    // Calculate Change Dynamically
+    amountReceivedInput.addEventListener('input', function() {
+        const totalAmount = parseFloat(document.getElementById('total-amount-display').dataset.rawTotal);
+        const received = parseFloat(this.value) || 0;
+        const change = received - totalAmount;
+
+        if (change >= 0) {
+            changeAmountInput.value = change.toFixed(2);
+            changeAmountInput.classList.remove('text-danger');
+            changeAmountInput.classList.add('text-success');
+            completeBtn.disabled = false;
+        } else {
+            changeAmountInput.value = 'Insufficient';
+            changeAmountInput.classList.remove('text-success');
+            changeAmountInput.classList.add('text-danger');
+            completeBtn.disabled = true;
+        }
+    });
+
+    // Handle Final Submission
+    completeBtn.addEventListener('click', async function() {
+        const totalAmount = document.getElementById('total-amount-display').dataset.rawTotal;
+        const amountReceived = amountReceivedInput.value;
+        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+        
         this.disabled = true;
         this.textContent = 'PROCESSING...';
 
@@ -115,21 +156,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({ cart, totalAmount })
+                body: JSON.stringify({ cart, totalAmount, paymentMethod, amountReceived })
             });
 
             const data = await response.json();
             if (data.success) {
-                window.location.href = `/payments/${data.orderID}`;
+                paymentModal.hide();
+                alert(`Payment Complete! Order ID: ${data.orderID}`);
+                
+                // Clear the cart and reset UI for the next customer
+                cart = [];
+                renderCart();
+                this.textContent = 'COMPLETE PAYMENT';
             } else {
                 alert(data.message || 'Checkout failed');
                 this.disabled = false;
-                this.textContent = 'CHECKOUT';
+                this.textContent = 'COMPLETE PAYMENT';
             }
         } catch (err) {
-            alert('Something went wrong');
+            alert('Something went wrong during payment.');
             this.disabled = false;
-            this.textContent = 'CHECKOUT';
+            this.textContent = 'COMPLETE PAYMENT';
         }
     });
 });

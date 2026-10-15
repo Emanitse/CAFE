@@ -22,7 +22,11 @@
             <div class="d-none d-md-flex justify-content-end mb-3">
                 <button class="btn text-white p-1" id="pcToggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg></button>
             </div>
-            <div class="d-flex justify-content-center mb-4 mt-4 nav-text"><div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width:50px;height:50px"><img src="{{ asset('images/cofee-bean.png') }}" class="img-fluid p-1" style="max-width:100%"></div></div>
+            <div class="d-flex justify-content-center mb-4 mt-4 nav-text">
+                <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width:45px;height:45px">
+                    <img src="{{ asset('images/cofee-bean.png') }}" class="img-fluid p-1" style="max-width:90%">
+                </div>
+            </div>
             <h5 class="text-center mb-5 text-white fw-bold nav-text">Cafe Ordering System</h5>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item mb-1"><a href="/home" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-text">Home</span></a></li>

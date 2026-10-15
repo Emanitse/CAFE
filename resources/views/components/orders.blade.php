@@ -14,21 +14,24 @@
             @endforeach
         </div>
 
-        <!-- Menu Grid -->
-        <div class="row overflow-auto flex-grow-1 align-content-start" id="menu-grid">
-            @foreach ($menuItems as $item)
-                <div class="col-sm-4 col-md-3 mb-3 menu-card-wrapper" data-category="{{ $item->categoryID }}">
-                    <div class="card h-100 shadow-sm item-card" style="cursor: pointer;" 
-                         data-id="{{ $item->menuID }}" 
-                         data-name="{{ $item->itemname }}" 
-                         data-price="{{ $item->price }}">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h6 class="card-title fw-bold text-brown">{{ $item->itemname }}</h6>
-                            <p class="card-text text-muted mb-0">₱{{ number_format($item->price, 2) }}</p>
+       
+        <!-- Menu Grid Scrollable Area -->
+        <div class="flex-grow-1 overflow-auto pe-2 menu-scroll-area">
+            <div class="row" id="menu-grid">
+                @foreach ($menuItems as $item)
+                    <div class="col-sm-4 col-md-3 mb-3 menu-card-wrapper" data-category="{{ $item->categoryID }}">
+                        <div class="card h-100 shadow-sm item-card" style="cursor: pointer;" 
+                             data-id="{{ $item->menuID }}" 
+                             data-name="{{ $item->itemname }}" 
+                             data-price="{{ $item->price }}">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h6 class="card-title fw-bold text-brown">{{ $item->itemname }}</h6>
+                                <p class="card-text text-muted mb-0">₱{{ number_format($item->price, 2) }}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
         
     </div>
@@ -54,3 +57,60 @@
 </div>
 @endsection
 
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-coffee text-white border-0">
+                <h5 class="modal-title fw-bold" id="paymentModalLabel">Process Payment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                    <span class="fw-bold text-muted">Order ID:</span>
+                    <span class="fw-bold text-dark">Pending...</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-4 border-bottom pb-2">
+                    <span class="fw-bold fs-5">Total Amount:</span>
+                    <span class="fw-bold fs-5 text-success" id="modal-total-display">₱0.00</span>
+                </div>
+
+                <!-- Payment Method (Radio buttons styled as boxes) -->
+                <div class="mb-3">
+                    <label class="fw-bold mb-2">Payment Method</label>
+                    <div class="d-flex gap-2">
+                        <input type="radio" class="btn-check" name="paymentMethod" id="methodCash" value="Cash" autocomplete="off" checked>
+                        <label class="btn btn-outline-dark w-50" for="methodCash">Cash</label>
+
+                        <input type="radio" class="btn-check" name="paymentMethod" id="methodGCash" value="GCash" autocomplete="off">
+                        <label class="btn btn-outline-dark w-50" for="methodGCash">GCash</label>
+                    </div>
+                </div>
+
+                <!-- Amount Received -->
+                <div class="mb-3">
+                    <label for="amountReceived" class="fw-bold mb-1">Amount Received</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">₱</span>
+                        <input type="number" class="form-control form-control-lg" id="amountReceived" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                </div>
+
+                <!-- Change -->
+                <div class="mb-4">
+                    <label for="changeAmount" class="fw-bold mb-1">Change</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted">₱</span>
+                        <input type="text" class="form-control form-control-lg bg-light text-danger fw-bold" id="changeAmount" value="0.00" readonly>
+                    </div>
+                </div>
+
+                <button id="complete-payment-btn" class="btn btn-coffee w-100 py-3 fw-bold fs-5 shadow-sm" disabled>
+                    COMPLETE PAYMENT
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
