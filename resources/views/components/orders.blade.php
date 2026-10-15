@@ -6,16 +6,16 @@
     <div class="col-md-8 d-flex flex-column h-100">
         <!-- Dynamic Categories Filter -->
         <div class="mb-3" id="category-filters">
-            <button class="btn btn-dark me-2 mb-2 category-btn active" data-category="all">All</button>
+            <button class="btn category-btn shadow-sm me-2 mb-2 active" data-category="all">All</button>
             @foreach ($categories as $category)
-                <button class="btn btn-outline-dark me-2 mb-2 category-btn" data-category="{{ $category->categoryID }}">
+                <button class="btn category-btn shadow-sm me-2 mb-2" data-category="{{ $category->categoryID }}">
                     {{ $category->categoryname }}
                 </button>
             @endforeach
         </div>
 
         <!-- Menu Grid -->
-        <div class="row overflow-auto flex-grow-1" id="menu-grid">
+        <div class="row overflow-auto flex-grow-1 align-content-start" id="menu-grid">
             @foreach ($menuItems as $item)
                 <div class="col-sm-4 col-md-3 mb-3 menu-card-wrapper" data-category="{{ $item->categoryID }}">
                     <div class="card h-100 shadow-sm item-card" style="cursor: pointer;" 
@@ -30,6 +30,7 @@
                 </div>
             @endforeach
         </div>
+        
     </div>
 
     <!-- Right Side: Order Details / Cart (35%) -->
@@ -43,9 +44,9 @@
         <div class="mt-auto border-top pt-3">
             <div class="d-flex justify-content-between mb-3 px-2">
                 <h5 class="fw-bold mb-0">Total:</h5>
-                <h5 class="fw-bold text-success mb-0" id="total-amount-display">₱0.00</h5>
+                <h5 class="fw-bold text-coffee mb-0" id="total-amount-display">₱0.00</h5>
             </div>
-            <button id="checkout-btn" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm" disabled>
+            <button id="checkout-btn" class="btn btn-coffee bg-coffee text-white w-100 py-3 fw-bold fs-5 shadow-sm" disabled>
                 CHECKOUT
             </button>
         </div>

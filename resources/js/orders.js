@@ -8,11 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.category-btn').forEach(b => {
-                b.classList.remove('btn-dark', 'active');
-                b.classList.add('btn-outline-dark');
+                b.classList.remove('active');
+                
             });
-            this.classList.remove('btn-outline-dark');
-            this.classList.add('btn-dark', 'active');
+           
+            this.classList.add('active');
 
             const selectedCategory = this.dataset.category;
             document.querySelectorAll('.menu-card-wrapper').forEach(card => {
