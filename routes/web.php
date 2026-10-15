@@ -29,9 +29,6 @@ Route::get('/categories', function () {
     return view('components.categories'); 
 });
 
-Route::get('/payments', function () {
-    return view('components.payments'); 
-});
 
 Route::get('/reports', function () {
     return view('components.reports'); 
