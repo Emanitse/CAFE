@@ -12,33 +12,33 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    // 1. Load the POS Screen
+    
     public function index()
     {
-        // Fetch categories and items to display on the left side
+       
         $categories = Category::all();
         $menuItems = MenuItem::all();
         
         return view('components.orders', compact('categories', 'menuItems'));
     }
 
-    // 2. Process the Checkout
+   
     public function store(Request $request)
 {
-    $accountID = $request->session()->get('accountID') ?? 1; // Fallback to 1 for testing if session is null
+    $accountID = $request->session()->get('accountID') ?? 1; 
 
     try {
-        // Use a database transaction to ensure either everything saves, or nothing saves
+        
         DB::beginTransaction();
 
-        // 1. Create the Order
+       
         $order = Order::create([
             'accountID' => $accountID,
             'orderdate' => Carbon::now(),
             'totalamount' => $request->totalAmount
         ]);
 
-        // 2. Insert into orderdetails table batch
+        
         foreach ($request->cart as $item) {
             OrderDetail::create([
                 'orderID' => $order->orderID,
@@ -48,7 +48,7 @@ class OrderController extends Controller
             ]);
         }
 
-        // 3. Create the Payment record
+   
         Payment::create([
             'orderID' => $order->orderID,
             'paymentmethod' => $request->paymentMethod,
@@ -58,7 +58,7 @@ class OrderController extends Controller
 
         DB::commit();
 
-        // Return the actual auto-incremented Order ID back to the JS alert
+        
         return response()->json(['success' => true, 'orderID' => $order->orderID]);
 
     } catch (\Exception $e) {

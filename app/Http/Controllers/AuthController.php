@@ -34,12 +34,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        // Clear the specific session data
+       
         $request->session()->flush();
         
-    
-        
-        // Redirect back to the login page
         return redirect('/login');
     }
 }

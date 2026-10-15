@@ -2,9 +2,9 @@
 
 @section('content')
 <div class="row h-100">
-    <!-- Left Side: Menu Items (65%) -->
+    <!-- Left Side-->
     <div class="col-md-8 d-flex flex-column h-100">
-        <!-- Dynamic Categories Filter -->
+        <!-- Categories -->
         <div class="mb-3" id="category-filters">
             <button class="btn category-btn shadow-sm me-2 mb-2 active" data-category="all">All</button>
             @foreach ($categories as $category)
@@ -15,7 +15,7 @@
         </div>
 
        
-        <!-- Menu Grid Scrollable Area -->
+        <!-- Menu Grid Area -->
         <div class="flex-grow-1 overflow-auto pe-2 menu-scroll-area">
             <div class="row" id="menu-grid">
                 @foreach ($menuItems as $item)
@@ -36,7 +36,7 @@
         
     </div>
 
-    <!-- Right Side: Order Details / Cart (35%) -->
+    <!-- Right Side -->
     <div class="col-md-4 d-flex flex-column bg-white shadow-sm rounded p-3 h-100 border-start">
         <h4 class="fw-bold text-brown mb-3 border-bottom pb-2">Current Order</h4>
         <div class="flex-grow-1 overflow-auto">
@@ -57,7 +57,7 @@
 </div>
 @endsection
 
-<!-- Payment Modal -->
+<!-- Payment form -->
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -77,7 +77,7 @@
                     <span class="fw-bold fs-5 text-success" id="modal-total-display">₱0.00</span>
                 </div>
 
-                <!-- Payment Method (Radio buttons styled as boxes) -->
+           
                 <div class="mb-3">
                     <label class="fw-bold mb-2">Payment Method</label>
                     <div class="d-flex gap-2">
@@ -89,7 +89,7 @@
                     </div>
                 </div>
 
-                <!-- Amount Received -->
+         
                 <div class="mb-3">
                     <label for="amountReceived" class="fw-bold mb-1">Amount Received</label>
                     <div class="input-group">
@@ -98,7 +98,7 @@
                     </div>
                 </div>
 
-                <!-- Change -->
+                
                 <div class="mb-4">
                     <label for="changeAmount" class="fw-bold mb-1">Change</label>
                     <div class="input-group">
