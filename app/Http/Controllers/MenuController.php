@@ -18,7 +18,7 @@ class MenuController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'itemname' => 'required|string|max:255',
+            'itemname' => 'required|string|max:255|unique:menuitems,itemname',
             'price' => 'required|numeric|min:0',
             'categoryID' => 'required|integer'
         ]);
@@ -32,6 +32,12 @@ class MenuController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'itemname' => 'required|string|max:255|unique:menuitems,itemname,' . $id . ',menuID',
+            'price' => 'required|numeric|min:0',
+            'categoryID' => 'required|integer'
+        ]);
+
         $item = MenuItem::findOrFail($id);
         $item->update($request->all());
         $item->load('category');

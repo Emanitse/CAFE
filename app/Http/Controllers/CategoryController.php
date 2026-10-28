@@ -6,7 +6,6 @@ use App\Models\Category;
 
 class CategoryController extends Controller
 {
-    // Load the Categories page
     public function index()
     {
         $categories = Category::where('is_active', 1)->orderBy('categoryID', 'desc')->get();
@@ -21,11 +20,10 @@ class CategoryController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // Save a new Category
     public function store(Request $request)
     {
         $request->validate([
-            'categoryname' => 'required|string|max:255'
+            'categoryname' => 'required|string|max:255|unique:categories,categoryname'
         ]);
 
         $category = Category::create([
@@ -35,11 +33,10 @@ class CategoryController extends Controller
         return response()->json(['success' => true, 'category' => $category]);
     }
 
-    // Update an existing Category
     public function update(Request $request, $id)
     {
         $request->validate([
-            'categoryname' => 'required|string|max:255'
+            'categoryname' => 'required|string|max:255|unique:categories,categoryname,' . $id . ',categoryID'
         ]);
 
         $category = Category::findOrFail($id);

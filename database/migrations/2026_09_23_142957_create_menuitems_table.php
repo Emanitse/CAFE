@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('menuitems', function (Blueprint $table) {
             $table->id('menuID');
             $table->unsignedBigInteger('categoryID');
-            $table->string('itemname');
+            $table->string('itemname')->unique();
             $table->decimal('price');
             $table->bigInteger('stock')->default(0);
             $table->foreign('categoryID')->references('categoryID')->on('categories')->onDelete('cascade');
