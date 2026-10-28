@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/', function () {
     return view('login');
@@ -25,9 +26,9 @@ Route::get('/menu', function () {
     return view('components.menu'); 
 });
 
-Route::get('/categories', function () {
-    return view('components.categories'); 
-});
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::post('/categories', [CategoryController::class, 'store']);
+Route::put('/categories/{id}', [CategoryController::class, 'update']);
 
 
 Route::get('/reports', function () {

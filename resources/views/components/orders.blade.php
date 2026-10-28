@@ -84,8 +84,8 @@
                         <input type="radio" class="btn-check" name="paymentMethod" id="methodCash" value="Cash" autocomplete="off" checked>
                         <label class="btn btn-outline-dark w-50" for="methodCash">Cash</label>
 
-                        <input type="radio" class="btn-check" name="paymentMethod" id="methodGCash" value="GCash" autocomplete="off">
-                        <label class="btn btn-outline-dark w-50" for="methodGCash">GCash</label>
+                        <input type="radio" class="btn-check" name="paymentMethod" id="methodEWallet" value="E-Wallet" autocomplete="off">
+                        <label class="btn btn-outline-dark w-50" for="methodEWallet">E-Wallet</label>
                     </div>
                 </div>
 
