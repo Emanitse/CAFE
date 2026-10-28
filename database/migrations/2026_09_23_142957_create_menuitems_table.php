@@ -16,8 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('categoryID');
             $table->string('itemname');
             $table->decimal('price');
-            $table->bigInteger('stock');
+            $table->bigInteger('stock')->default(0);
             $table->foreign('categoryID')->references('categoryID')->on('categories')->onDelete('cascade');
+            $table->boolean('is_active')->default(true);
         });
     }
 

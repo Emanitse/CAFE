@@ -16,8 +16,8 @@ class OrderController extends Controller
 public function index()
     {
        
-        $categories = Category::where('is_active', true)->get();
-        $menuItems = MenuItem::whereHas('category', fn($q) => $q->where('is_active', true))->get();
+        $categories = Category::where('is_active', 1)->get();
+        $menuItems = MenuItem::where('is_active', 1)->get();
         
         return view('components.orders', compact('categories', 'menuItems'));
     }

@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AccountSeeder::class,
-            CategorySeeder::class,  // Must be before MenuItemSeeder
+            CategorySeeder::class,  
             MenuItemSeeder::class,
         ]);
     }

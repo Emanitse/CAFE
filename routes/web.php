@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\MenuController;
 
 Route::get('/', function () {
     return view('login');
@@ -22,9 +23,10 @@ Route::get('/home', function () {
 Route::get('/orders', [OrderController::class, 'index']);
 Route::post('/orders/checkout', [OrderController::class, 'store']);
 
-Route::get('/menu', function () {
-    return view('components.menu'); 
-});
+Route::get('/menu', [MenuController::class, 'index']);
+Route::post('/menu', [MenuController::class, 'store']);
+Route::put('/menu/{id}', [MenuController::class, 'update']);
+Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::post('/categories', [CategoryController::class, 'store']);

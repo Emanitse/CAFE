@@ -15,6 +15,7 @@ class MenuItem extends Model
         'itemname',
         'price',
         'stock',
+        'is_active',
     ];
 
     protected $casts = [
