@@ -6,11 +6,11 @@ use App\Models\Category;
 
 class CategorySeeder extends Seeder
 {
-    public function run(): void
+public function run(): void
     {
-        Category::create(['categoryname' => 'Hot Coffee']);  // ID 1
-        Category::create(['categoryname' => 'Iced Drinks']); // ID 2
-        Category::create(['categoryname' => 'Pastries']);    // ID 3
-        Category::create(['categoryname' => 'Add-ons']);     // ID 4
+        Category::create(['categoryname' => 'Hot Coffee', 'is_active' => true]);  // ID 1
+        Category::create(['categoryname' => 'Iced Drinks', 'is_active' => true]); // ID 2
+        Category::create(['categoryname' => 'Pastries', 'is_active' => true]);    // ID 3
+        Category::create(['categoryname' => 'Add-ons', 'is_active' => true]);     // ID 4
     }
 }

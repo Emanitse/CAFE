@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller
 {
     
-    public function index()
+public function index()
     {
        
-        $categories = Category::all();
-        $menuItems = MenuItem::all();
+        $categories = Category::where('is_active', true)->get();
+        $menuItems = MenuItem::whereHas('category', fn($q) => $q->where('is_active', true))->get();
         
         return view('components.orders', compact('categories', 'menuItems'));
     }

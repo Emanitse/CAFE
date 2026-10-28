@@ -9,8 +9,16 @@ class CategoryController extends Controller
     // Load the Categories page
     public function index()
     {
-        $categories = Category::orderBy('categoryID', 'desc')->get();
+        $categories = Category::where('is_active', 1)->orderBy('categoryID', 'desc')->get();
         return view('components.categories', compact('categories'));
+    }
+
+    public function destroy($id)
+    {
+        $category = Category::findOrFail($id);
+        $category->update(['is_active' => 0]); 
+
+        return response()->json(['success' => true]);
     }
 
     // Save a new Category

@@ -24,7 +24,8 @@ class MenuItem extends Model
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'categoryID', 'categoryID');
+       return $this->belongsTo(Category::class, 'categoryID', 'categoryID')
+        ->where('is_active', true);
     }
 
     public function orderDetails()

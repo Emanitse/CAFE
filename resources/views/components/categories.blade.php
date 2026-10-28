@@ -30,12 +30,17 @@
                                 <td class="px-4 fw-bold text-secondary">{{ $category->categoryID }}</td>
                                 <td class="px-4 fw-bold category-name-display">{{ $category->categoryname }}</td>
                                 <td class="px-4 text-end">
-                                    <button class="btn btn-sm btn-outline-secondary edit-btn" 
-                                            data-id="{{ $category->categoryID }}" 
-                                            data-name="{{ $category->categoryname }}">
-                                        Edit
-                                    </button>
-                                </td>
+    <button class="btn btn-sm btn-outline-secondary edit-btn me-1" 
+            data-id="{{ $category->categoryID }}" 
+            data-name="{{ $category->categoryname }}">
+        Edit
+    </button>
+    <button class="btn btn-sm btn-outline-danger delete-btn" 
+            data-id="{{ $category->categoryID }}" 
+            data-name="{{ $category->categoryname }}">
+        Delete
+    </button>
+</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -90,5 +95,23 @@
         </div>
     </div>
 </div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow text-center p-3">
+            <div class="modal-body">
+                <input type="hidden" id="deleteCategoryID">
+                <h5 class="fw-bold mb-3">Delete Category?</h5>
+                <p class="text-muted mb-4">Are you sure you want to remove "<span id="deleteCategoryName" class="fw-bold text-dark"></span>"? This cannot be undone.</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-light fw-bold px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger fw-bold px-4">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
