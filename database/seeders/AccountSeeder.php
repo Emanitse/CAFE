@@ -10,6 +10,7 @@ class AccountSeeder extends Seeder
     public function run(): void
     {
         Account::create([
+            'username' => 'admin',
             'email' => 'admin@cafe.local',
             'password' => 'admin123',
             'role' => 'admin',
@@ -17,6 +18,7 @@ class AccountSeeder extends Seeder
         ]);
 
         Account::create([
+            'username' => 'cashier',
             'email' => 'cashier@cafe.local',
             'password' => 'cashier123',
             'role' => 'staff',

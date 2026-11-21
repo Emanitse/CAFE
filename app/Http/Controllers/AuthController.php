@@ -14,7 +14,6 @@ class AuthController extends Controller
 
     public function showLogin()
     {
-        $this->generateCaptcha();
         return view('login');
     }
 
@@ -31,21 +30,12 @@ class AuthController extends Controller
             ])->withInput($request->only('email'));
         }
 
-        $captchaValid = $this->validateCaptcha($request);
-        if (!$captchaValid) {
-            $this->generateCaptcha();
-            return back()->withErrors([
-                'captcha' => 'Incorrect CAPTCHA answer. Please try again.'
-            ])->withInput($request->only('email'));
-        }
-
         $account = Account::withoutGlobalScope('active')
             ->where('email', $request->email)
             ->first();
 
         if (!$account || !Hash::check($request->password, $account->password)) {
             $this->recordFailedAttempt($lockoutKey);
-            $this->generateCaptcha();
             
             $remaining = $this->maxAttempts - Cache::get($lockoutKey, 0);
             return back()->withErrors([
@@ -54,7 +44,6 @@ class AuthController extends Controller
         }
 
         if (!$account->is_active) {
-            $this->generateCaptcha();
             return back()->withErrors([
                 'email' => 'This account has been deactivated.'
             ])->withInput($request->only('email'));
@@ -65,16 +54,51 @@ class AuthController extends Controller
 
         $request->session()->put('accountID', $account->accountID);
         $request->session()->put('email', $account->email);
+        $request->session()->put('username', $account->username);
         $request->session()->put('role', $account->role);
 
         return redirect('/home');
+    }
+
+    public function showRegister()
+    {
+        $this->generateCaptcha();
+        return view('login', ['showRegister' => true]);
+    }
+
+    public function register(Request $request)
+    {
+        $this->validateRegistrationRequest($request);
+
+        $captchaValid = $this->validateCaptcha($request);
+        if (!$captchaValid) {
+            $this->generateCaptcha();
+            return back()->withErrors([
+                'captcha' => 'Incorrect CAPTCHA answer. Please try again.'
+            ])->withInput($request->only('username', 'email'));
+        }
+
+        $account = Account::create([
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => $request->password,
+            'role' => 'staff',
+            'is_active' => true,
+        ]);
+
+        $this->generateCaptcha();
+
+        return redirect()->route('login')->with('success', 'Registration successful! Please log in.');
     }
 
     public function logout(Request $request)
     {
         $request->session()->flush();
         $request->session()->regenerate();
-        return redirect('/login');
+        return redirect('/login')->with('status', 'You have been logged out successfully.')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, private')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT');
     }
 
     protected function validateLoginRequest(Request $request)
@@ -82,12 +106,25 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:8',
-            'captcha' => 'required|numeric',
         ], [
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
             'password.required' => 'Password is required.',
             'password.min' => 'Password must be at least 8 characters.',
+        ]);
+    }
+
+    protected function validateRegistrationRequest(Request $request)
+    {
+        $request->validate(Account::registrationRules(), [
+            'username.required' => 'Username is required.',
+            'username.unique' => 'This username is already taken.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email is already registered.',
+            'password.required' => 'Password is required.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
             'captcha.required' => 'Please answer the CAPTCHA.',
             'captcha.numeric' => 'CAPTCHA answer must be a number.',
         ]);

@@ -10,7 +10,7 @@ class Account extends Model
     protected $table = 'accounts';
     protected $primaryKey = 'accountID';
 
-    protected $fillable = ['email', 'password', 'role', 'is_active'];
+    protected $fillable = ['username', 'email', 'password', 'role', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean',
@@ -37,6 +37,16 @@ class Account extends Model
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,staff',
             'is_active' => 'boolean',
+        ];
+    }
+
+    public static function registrationRules()
+    {
+        return [
+            'username' => 'required|string|max:255|unique:accounts,username',
+            'email' => 'required|email|max:255|unique:accounts,email',
+            'password' => 'required|string|min:8|confirmed',
+            'captcha' => 'required|numeric',
         ];
     }
 }
