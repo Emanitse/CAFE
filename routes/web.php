@@ -7,13 +7,10 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MenuController;
 
 Route::get('/', function () {
-    return view('login');
+    return redirect('/login');
 });
 
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
-
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/home', function () {

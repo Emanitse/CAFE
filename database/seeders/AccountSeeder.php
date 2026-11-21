@@ -9,18 +9,18 @@ class AccountSeeder extends Seeder
 {
     public function run(): void
     {
-      
         Account::create([
-            'username' => 'admin',
-            'password' => Hash::make('admin123'),
-            'role' => 'admin'
+            'email' => 'admin@cafe.local',
+            'password' => 'admin123',
+            'role' => 'admin',
+            'is_active' => true,
         ]);
 
-
         Account::create([
-            'username' => 'cashier',
-            'password' => Hash::make('cashier123'),
-            'role' => 'staff'
+            'email' => 'cashier@cafe.local',
+            'password' => 'cashier123',
+            'role' => 'staff',
+            'is_active' => true,
         ]);
     }
 }
