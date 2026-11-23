@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\HomeController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -22,9 +23,8 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.st
 Route::middleware(['role'])->group(function () {
     
     // Home - accessible to all 
-    Route::get('/home', function () {
-        return view('components.home'); 
-    })->name('home');
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/home/data', [HomeController::class, 'getData'])->name('home.data');
 
     // Orders - accessible to all 
     Route::prefix('orders')->name('orders.')->group(function () {
