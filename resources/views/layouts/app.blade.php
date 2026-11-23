@@ -41,6 +41,35 @@
                     <li class="nav-item mb-1"><a href="/users" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-text">Users</span></a></li>
                 @endif
             </ul>
+            
+            </ul>
+
+            <!-- Logged-in User Profile Link -->
+            @php
+                $sidebarName = session('username') ?? 'User';
+                $sidebarRole = session('role') ?? 'staff';
+                $sidebarInitial = strtoupper(substr($sidebarName, 0, 1));
+            @endphp
+            <div class="mt-3">
+                <a href="/profile" class="nav-link text-white d-flex align-items-center p-2 rounded" title="Profile Settings">
+                    <div id="sidebarProfileInitial"
+                         class="rounded-circle bg-white text-dark fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 36px; height: 36px; font-size: 0.9rem;">
+                        {{ $sidebarInitial }}
+                    </div>
+
+                    <div class="ms-3 nav-text overflow-hidden">
+                        <div id="sidebarUsername" class="fw-bold text-white text-truncate" style="font-size: 0.9rem; line-height: 1.2;">
+                            {{ $sidebarName }}
+                        </div>
+                        <small class="text-white-50 text-capitalize d-block" style="font-size: 0.72rem;">
+                            {{ $sidebarRole }}
+                        </small>
+                    </div>
+                </a>
+            </div>
+
+
             <hr class="text-white border-2 opacity-50 nav-text">
             <div class="mt-2"><a href="{{ route('logout') }}" class="nav-link text-white fw-bold d-flex align-items-center justify-content-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg><span class="nav-text">Logout</span></a></div>
         </div>

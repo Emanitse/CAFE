@@ -5,3 +5,4 @@ import "./menu.js";
 import "./reports.js";
 import "./users.js";
 import "./paginator.js";
+import "./profile.js";
