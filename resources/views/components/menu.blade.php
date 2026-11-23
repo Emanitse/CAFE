@@ -5,7 +5,7 @@
     
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fw-bold text-dark mb-0">Menu Management</h3>
-        <button class="btn text-white bg-coffee shadow-sm px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#addMenuModal">
+        <button type="button" class="btn text-white bg-coffee shadow-sm px-4 fw-bold" id="openAddMenuBtn">
             + Add Menu Item
         </button>
     </div>
@@ -22,7 +22,7 @@
 
     <!-- Menu Items Table -->
     <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden">
-        <div class="card-body p-0 d-flex flex-column">
+        <div class="card-body p-0 d-flex flex-column overflow-hidden">
             <div class="table-responsive flex-grow-1">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light sticky-top">
@@ -36,7 +36,6 @@
                     </thead>
                     <tbody id="menu-table-body">
                         @foreach($menuItems as $item)
-                            <!-- Notice the data-category attribute here for the filter logic -->
                             <tr id="row-{{ $item->menuID }}" class="menu-row" data-category="{{ $item->categoryID }}">
                                 <td class="px-4 fw-bold text-secondary">{{ $item->menuID }}</td>
                                 <td class="px-4 fw-bold item-name-display">{{ $item->itemname }}</td>
@@ -57,9 +56,9 @@
                     </tbody>
                 </table>
             </div>
+            <div id="menu-pagination" class="card-footer bg-white border-top py-2 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2"></div>
         </div>
     </div>
-</div>
 
 <!-- ADD MODAL -->
 <div class="modal fade" id="addMenuModal" tabindex="-1" aria-hidden="true">

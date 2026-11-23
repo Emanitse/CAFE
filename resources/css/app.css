@@ -81,3 +81,20 @@
         margin-bottom: 10px;
     }
 }
+
+#category-filters::-webkit-scrollbar {
+    height: 5px;
+}
+
+#category-filters::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#category-filters::-webkit-scrollbar-thumb {
+    background: #ced4da;
+    border-radius: 10px;
+}
+
+#category-filters::-webkit-scrollbar-thumb:hover {
+    background: #66402E;
+}

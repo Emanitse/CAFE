@@ -5,10 +5,10 @@
     <!-- Left Side-->
     <div class="col-md-8 d-flex flex-column h-100">
         <!-- Categories -->
-        <div class="mb-3" id="category-filters">
-            <button class="btn category-btn shadow-sm me-2 mb-2 active" data-category="all">All</button>
+        <div class="d-flex flex-nowrap overflow-x-auto gap-2 pb-2 mb-2" id="category-filters">
+            <button class="btn category-btn shadow-sm flex-shrink-0 text-nowrap active" data-category="all">All</button>
             @foreach ($categories as $category)
-                <button class="btn category-btn shadow-sm me-2 mb-2" data-category="{{ $category->categoryID }}">
+                <button class="btn category-btn shadow-sm flex-shrink-0 text-nowrap" data-category="{{ $category->categoryID }}">
                     {{ $category->categoryname }}
                 </button>
             @endforeach

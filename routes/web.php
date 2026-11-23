@@ -6,6 +6,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -53,13 +54,17 @@ Route::middleware(['role'])->group(function () {
         Route::get('/reports/history', [ReportController::class, 'getOrderHistory'])->name('reports.history');
         Route::get('/reports/categories', [ReportController::class, 'getCategories'])->name('reports.categories');
         Route::get('/reports/items', [ReportController::class, 'getItems'])->name('reports.items');
-    });
+        Route::post('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.exportPdf');
+        });
 
-    // Users Management - Admin ONLY 
-    Route::middleware('role:admin')->group(function () {
-        Route::get('/users', function () {
-            return view('components.users'); 
-        })->name('users');
+    
+    // Users Management - Admin & Superadmin
+    Route::middleware('role:admin')->prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/list', [UserController::class, 'getUsers'])->name('list');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::put('/{id}', [UserController::class, 'update'])->name('update');
+        Route::patch('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle');
     });
 
     // Logout 

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Category;
 use App\Models\MenuItem;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
@@ -46,6 +47,62 @@ class ReportController extends Controller
             'success' => true,
             'items' => $items,
         ]);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $rawIds = $request->input('selected_ids', '[]');
+        $selectedIds = is_array($rawIds) ? $rawIds : json_decode($rawIds, true);
+
+        if (empty($selectedIds) || !is_array($selectedIds)) {
+            return back()->with('error', 'Please select at least one record to export.');
+        }
+
+        $logs = DB::table('orderdetails')
+            ->join('orders', 'orderdetails.orderID', '=', 'orders.orderID')
+            ->leftJoin('menuitems', 'orderdetails.menuID', '=', 'menuitems.menuID')
+            ->leftJoin('categories', 'menuitems.categoryID', '=', 'categories.categoryID')
+            ->leftJoin('accounts', 'orders.accountID', '=', 'accounts.accountID')
+            ->leftJoin('payments', 'orders.orderID', '=', 'payments.orderID')
+            ->whereIn('orderdetails.orderdetailID', $selectedIds)
+            ->select(
+                'orderdetails.orderdetailID',
+                'orders.orderID',
+                'orders.orderdate',
+                'menuitems.itemname',
+                'categories.categoryname',
+                'orderdetails.quantity',
+                'orderdetails.subtotal',
+                'payments.paymentmethod',
+                'accounts.username as cashier'
+            )
+            ->orderBy('orders.orderdate', 'desc')
+            ->orderBy('orderdetails.orderdetailID', 'desc')
+            ->get()
+            ->map(function ($row) {
+                $row->formatted_date = Carbon::parse($row->orderdate)->format('M d, Y h:i A');
+                return $row;
+            });
+
+        $summary = [
+            'count' => $logs->count(),
+            'totalQuantity' => (int) $logs->sum('quantity'),
+            'totalSales' => number_format((float) $logs->sum('subtotal'), 2, '.', ','),
+        ];
+
+        $meta = [
+            'generatedAt' => Carbon::now()->format('M d, Y h:i A'),
+            'generatedBy' => session('username') ?? 'Administrator',
+            'dateRange' => $request->input('date_range_label', 'All Dates'),
+            'filterLabel' => $request->input('filter_label', 'All Categories / All Items'),
+        ];
+
+        $pdf = Pdf::loadView('exports.sales_report_pdf', compact('logs', 'summary', 'meta'))
+            ->setPaper('a4', 'landscape');
+
+        $filename = 'Cafe-Ordering-System-Sales-Report-' . Carbon::now()->format('Y-m-d_His') . '.pdf';
+
+        return $pdf->download($filename);
     }
 
 

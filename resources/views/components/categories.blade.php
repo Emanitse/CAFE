@@ -14,7 +14,7 @@
 
     <!-- Categories Table -->
     <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden">
-        <div class="card-body p-0 d-flex flex-column">
+        <div class="card-body p-0 d-flex flex-column overflow-hidden">
             <div class="table-responsive flex-grow-1">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light sticky-top">
@@ -26,30 +26,29 @@
                     </thead>
                     <tbody id="category-table-body">
                         @foreach($categories as $category)
-                            <tr id="row-{{ $category->categoryID }}">
+                            <tr id="row-{{ $category->categoryID }}" class="category-row">
                                 <td class="px-4 fw-bold text-secondary">{{ $category->categoryID }}</td>
                                 <td class="px-4 fw-bold category-name-display">{{ $category->categoryname }}</td>
                                 <td class="px-4 text-end">
-    <button class="btn btn-sm btn-outline-secondary edit-btn me-1" 
-            data-id="{{ $category->categoryID }}" 
-            data-name="{{ $category->categoryname }}">
-        Edit
-    </button>
-    <button class="btn btn-sm btn-outline-danger delete-btn" 
-            data-id="{{ $category->categoryID }}" 
-            data-name="{{ $category->categoryname }}">
-        Delete
-    </button>
-</td>
+                                    <button class="btn btn-sm btn-outline-secondary edit-btn me-1" 
+                                            data-id="{{ $category->categoryID }}" 
+                                            data-name="{{ $category->categoryname }}">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                            data-id="{{ $category->categoryID }}" 
+                                            data-name="{{ $category->categoryname }}">
+                                        Delete
+                                    </button>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
+            <div id="categories-pagination" class="card-footer bg-white border-top py-2 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2"></div>
         </div>
     </div>
-
-</div>
 
 <!-- ADD CATEGORY MODAL -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">

@@ -3,3 +3,5 @@ import "./orders.js";
 import "./categories.js";
 import "./menu.js";
 import "./reports.js";
+import "./users.js";
+import "./paginator.js";

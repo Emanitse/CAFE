@@ -25,6 +25,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const categoryFilters = document.getElementById('category-filters');
+    categoryFilters?.addEventListener('wheel', function (e) {
+        if (e.deltaY !== 0 && this.scrollWidth > this.clientWidth) {
+            e.preventDefault();
+            this.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+
 
     document.querySelectorAll('.item-card').forEach(card => {
         card.addEventListener('click', function() {
