@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Only execute if we are on the Orders page
+
     if (!document.getElementById('category-filters')) return;
 
     let cart = [];
 
-    // 1. Category Filter Logic
+  
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.category-btn').forEach(b => {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 2. Cart Logic
+
     document.querySelectorAll('.item-card').forEach(card => {
         card.addEventListener('click', function() {
             const id = this.dataset.id;
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Event delegation for cart buttons
+
     document.getElementById('cart-table-body').addEventListener('click', function(e) {
         const id = e.target.dataset.id;
         if (!id) return;
@@ -101,18 +101,18 @@ document.addEventListener('DOMContentLoaded', function() {
         totalDisplay.dataset.rawTotal = grandTotal;
     }
 
-    // 3. Checkout & Payment Modal Logic
+
     const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
     const amountReceivedInput = document.getElementById('amountReceived');
     const changeAmountInput = document.getElementById('changeAmount');
     const completeBtn = document.getElementById('complete-payment-btn');
 
-    // Open Modal when Checkout is clicked
+    
     document.getElementById('checkout-btn').addEventListener('click', function() {
         const totalAmount = document.getElementById('total-amount-display').dataset.rawTotal;
         document.getElementById('modal-total-display').textContent = `₱${parseFloat(totalAmount).toFixed(2)}`;
         
-        // Reset modal fields
+      
         amountReceivedInput.value = '';
         changeAmountInput.value = '0.00';
         completeBtn.disabled = true;
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         paymentModal.show();
     });
 
-    // Calculate Change Dynamically
+  
     amountReceivedInput.addEventListener('input', function() {
         const totalAmount = parseFloat(document.getElementById('total-amount-display').dataset.rawTotal);
         const received = parseFloat(this.value) || 0;
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle Final Submission
+   
     completeBtn.addEventListener('click', async function() {
         const totalAmount = document.getElementById('total-amount-display').dataset.rawTotal;
         const amountReceived = amountReceivedInput.value;

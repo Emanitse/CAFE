@@ -17,7 +17,7 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        // Check if user is authenticated via session
+      
         $accountId = session('accountID');
         $userRole = session('role');
 
@@ -25,17 +25,17 @@ class RoleMiddleware
             return redirect()->route('login')->with('error', 'Please log in to access this page.');
         }
 
-        // If no roles specified, just require authentication
+      
         if (empty($roles)) {
             return $next($request);
         }
 
-        // Admin has access to everything
+       
         if ($userRole === 'admin') {
             return $next($request);
         }
 
-        // Check if user's role matches any of the allowed roles
+      
         if (!in_array($userRole, $roles, true)) {
             return redirect()->route('home')->with('error', 'You do not have permission to access this page.');
         }

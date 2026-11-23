@@ -24,10 +24,14 @@ class AuthController extends Controller
         $lockoutKey = $this->getLockoutKey($request);
         
         if ($this->isLockedOut($lockoutKey)) {
-            $seconds = Cache::get($lockoutKey . ':ttl');
+            $lockoutData = $this->getLockoutData($lockoutKey);
+            $seconds = max(0, $lockoutData['ttl'] ?? $this->lockoutDuration);
+            $lockoutEndTime = $lockoutData['end_time'] ?? (time() + $seconds);
+            
             return back()->withErrors([
                 'email' => "Too many failed attempts. Please try again in {$seconds} seconds."
-            ])->withInput($request->only('email'));
+            ])->withInput($request->only('email'))
+              ->with('lockout_end_time', $lockoutEndTime);
         }
 
         $account = Account::withoutGlobalScope('active')
@@ -37,7 +41,18 @@ class AuthController extends Controller
         if (!$account || !Hash::check($request->password, $account->password)) {
             $this->recordFailedAttempt($lockoutKey);
             
-            $remaining = $this->maxAttempts - Cache::get($lockoutKey, 0);
+            $attempts = Cache::get($lockoutKey, 0);
+            $remaining = max(0, $this->maxAttempts - $attempts);
+            
+          
+            if ($attempts >= $this->maxAttempts) {
+                $lockoutEndTime = time() + $this->lockoutDuration;
+                return back()->withErrors([
+                    'email' => "Too many failed attempts. Please try again in {$this->lockoutDuration} seconds."
+                ])->withInput($request->only('email'))
+                  ->with('lockout_end_time', $lockoutEndTime);
+            }
+            
             return back()->withErrors([
                 'email' => "Invalid email or password. {$remaining} attempts remaining."
             ])->withInput($request->only('email'));
@@ -50,6 +65,7 @@ class AuthController extends Controller
         }
 
         $this->clearFailedAttempts($lockoutKey);
+        $request->session()->forget('lockout_end_time');
         $request->session()->regenerate();
 
         $request->session()->put('accountID', $account->accountID);
@@ -133,7 +149,7 @@ class AuthController extends Controller
     protected function getLockoutKey(Request $request): string
     {
         $email = $request->input('email') ?? 'unknown';
-        return 'login_attempts:' . Str::lower($email) . ':' . $request->ip();
+        return 'login_attempts:' . Str::lower($email);
     }
 
     protected function isLockedOut(string $key): bool
@@ -141,17 +157,32 @@ class AuthController extends Controller
         return Cache::has($key . ':locked');
     }
 
+    protected function getLockoutData(string $key): array
+    {
+        $ttl = Cache::get($key . ':ttl', $this->lockoutDuration);
+        $endTime = session("lockout_end_time_{$key}");
+        if (!$endTime) {
+            $endTime = time() + $ttl;
+            session(["lockout_end_time_{$key}" => $endTime]);
+        }
+        return [
+            'ttl' => max(0, $endTime - time()),
+            'end_time' => $endTime,
+        ];
+    }
+
     protected function recordFailedAttempt(string $key): void
     {
-        $attempts = Cache::increment($key);
-        
-        if ($attempts === 1) {
-            Cache::expire($key, $this->lockoutDuration * 60);
-        }
+        $attempts = Cache::get($key, 0) + 1;
+        Cache::put($key, $attempts, $this->lockoutDuration * 60);
 
         if ($attempts >= $this->maxAttempts) {
             Cache::put($key . ':locked', true, $this->lockoutDuration);
             Cache::put($key . ':ttl', $this->lockoutDuration, $this->lockoutDuration);
+            
+          
+            $lockoutEndTime = time() + $this->lockoutDuration;
+            session(["lockout_end_time_{$key}" => $lockoutEndTime]);
         }
     }
 
@@ -160,6 +191,7 @@ class AuthController extends Controller
         Cache::forget($key);
         Cache::forget($key . ':locked');
         Cache::forget($key . ':ttl');
+        session()->forget("lockout_end_time_{$key}");
     }
 
     protected function generateCaptcha(): void

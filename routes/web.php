@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -16,15 +17,15 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 
-// Protected routes - require authentication + cache control
+// Protected routes 
 Route::middleware(['role'])->group(function () {
     
-    // Home - accessible to all authenticated users (admin, staff)
+    // Home - accessible to all 
     Route::get('/home', function () {
         return view('components.home'); 
     })->name('home');
 
-    // Orders - accessible to all authenticated users
+    // Orders - accessible to all 
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->name('index');
         Route::post('/checkout', [OrderController::class, 'store'])->name('checkout');
@@ -46,20 +47,21 @@ Route::middleware(['role'])->group(function () {
         Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy');
     });
 
-    // Reports - Admin only (example)
+    // Reports - Admin only
     Route::middleware('role:admin')->group(function () {
-        Route::get('/reports', function () {
-            return view('components.reports'); 
-        })->name('reports');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+        Route::get('/reports/history', [ReportController::class, 'getOrderHistory'])->name('reports.history');
+        Route::get('/reports/categories', [ReportController::class, 'getCategories'])->name('reports.categories');
+        Route::get('/reports/items', [ReportController::class, 'getItems'])->name('reports.items');
     });
 
-    // Users Management - Admin ONLY (Staff explicitly denied)
+    // Users Management - Admin ONLY 
     Route::middleware('role:admin')->group(function () {
         Route::get('/users', function () {
             return view('components.users'); 
         })->name('users');
     });
 
-    // Logout - accessible to all authenticated users
+    // Logout 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 });

@@ -33,9 +33,14 @@
                     <div id="loginForm" class="auth-form {{ !($showRegister ?? false) ? '' : 'd-none' }}">
                         <h3 class="mb-4 fw-bold text-center">Sign In</h3>
 
-                        @if(session('error'))
-                            <div class="alert alert-danger">
-                                {{ session('error') }}
+                        <!-- Form-level error alert (for lockout, invalid credentials, etc.) -->
+                        @if($errors->has('email') || session('error'))
+                            <div class="alert alert-danger mb-4" id="errorAlert">
+                                @if($errors->has('email'))
+                                    <span id="errorMessage">{{ $errors->first('email') }}</span>
+                                @else
+                                    <span id="errorMessage">{{ session('error') }}</span>
+                                @endif
                             </div>
                         @endif
 
@@ -45,9 +50,6 @@
                                 <label for="email" class="form-label">Email Address</label>
                                 <input type="email" class="form-control @error('email') is-invalid @enderror" 
                                        id="email" name="email" value="{{ old('email') }}" required autocomplete="email">
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="password" class="form-label">Password <small class="text-muted">(min. 8 characters)</small></label>
@@ -57,7 +59,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <button type="submit" class="btn bg-coffee text-white w-100 py-2 rounded">Login</button>
+                            <button type="submit" class="btn bg-coffee text-white w-100 py-2 rounded" id="loginBtn">Login</button>
                         </form>
 
                         <div class="text-center mt-3">
@@ -69,9 +71,13 @@
                     <div id="registerForm" class="auth-form {{ ($showRegister ?? false) ? '' : 'd-none' }}">
                         <h3 class="mb-4 fw-bold text-center">Create Account</h3>
 
-                        @if(session('error'))
-                            <div class="alert alert-danger">
-                                {{ session('error') }}
+                        @if($errors->any())
+                            <div class="alert alert-danger mb-4">
+                                <ul class="mb-0">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
                             </div>
                         @endif
 
@@ -135,13 +141,73 @@
 
 @push('scripts')
 <script>
-    // Auto-show success toast
+  
     document.addEventListener('DOMContentLoaded', function() {
         const toastEl = document.getElementById('successToast');
         if (toastEl) {
             const toast = new bootstrap.Toast(toastEl);
             toast.show();
         }
+
+
+        initLockoutCountdown();
     });
+
+    function initLockoutCountdown() {
+     
+        const lockoutEndTime = {{ session('lockout_end_time', 0) }};
+        
+        if (!lockoutEndTime || lockoutEndTime <= 0) {
+            return;
+        }
+
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        if (!errorAlert || !errorMessage) {
+            return;
+        }
+
+    
+        if (loginBtn) {
+            loginBtn.disabled = true;
+        }
+
+        function updateCountdown() {
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = Math.max(0, lockoutEndTime - now);
+            
+            if (remaining > 0) {
+                errorMessage.textContent = `Too many failed attempts. Please try again in ${remaining} seconds.`;
+            } else {
+                errorMessage.textContent = 'You can now try logging in again.';
+                errorAlert.classList.remove('alert-danger');
+                errorAlert.classList.add('alert-info');
+                
+                if (loginBtn) {
+                    loginBtn.disabled = false;
+                }
+                
+              
+                fetch('/login', { method: 'GET', credentials: 'same-origin' })
+                    .then(() => {
+                      
+                        window.location.reload();
+                    });
+                
+                return;
+            }
+        }
+
+        
+        updateCountdown();
+        
+        
+        const interval = setInterval(updateCountdown, 1000);
+        
+       
+        window.addEventListener('beforeunload', () => clearInterval(interval));
+    }
 </script>
 @endpush
