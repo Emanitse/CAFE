@@ -18,10 +18,26 @@ class AccountSeeder extends Seeder
         ]);
 
         Account::create([
-            'username' => 'cashier',
-            'email' => 'cashier@cafe.local',
-            'password' => 'cashier123',
+            'username' => 'staff',
+            'email' => 'staff@cafe.local',
+            'password' => 'staff123',
             'role' => 'staff',
+            'is_active' => true,
+        ]);
+
+        Account::create([
+            'username' => 'manager',
+            'email' => 'manager@cafe.local',
+            'password' => 'manager123',
+            'role' => 'manager',
+            'is_active' => true,
+        ]);
+
+        Account::create([
+            'username' => 'superadmin',
+            'email' => 'superadmin@cafe.local',
+            'password' => 'superadmin123',
+            'role' => 'superadmin',
             'is_active' => true,
         ]);
     }

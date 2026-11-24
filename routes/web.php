@@ -34,24 +34,24 @@ Route::middleware(['role'])->group(function () {
         Route::post('/checkout', [OrderController::class, 'store'])->name('checkout');
     });
 
-    // Menu Management - Admin only
-    Route::middleware('role:admin')->prefix('menu')->name('menu.')->group(function () {
+    // Menu Management - Admin and Manager only
+    Route::middleware('role:admin, manager, superadmin')->prefix('menu')->name('menu.')->group(function () {
         Route::get('/', [MenuController::class, 'index'])->name('index');
         Route::post('/', [MenuController::class, 'store'])->name('store');
         Route::put('/{id}', [MenuController::class, 'update'])->name('update');
         Route::delete('/{id}', [MenuController::class, 'destroy'])->name('destroy');
     });
 
-    // Categories Management - Admin only
-    Route::middleware('role:admin')->prefix('categories')->name('categories.')->group(function () {
+    // Categories Management - Admin and Manager only
+    Route::middleware('role:admin, manager, superadmin')->prefix('categories')->name('categories.')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
         Route::post('/', [CategoryController::class, 'store'])->name('store');
         Route::put('/{id}', [CategoryController::class, 'update'])->name('update');
         Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy');
     });
 
-    // Reports - Admin only
-    Route::middleware('role:admin')->group(function () {
+    // Reports - Admin and Superadmin only
+    Route::middleware('role:admin, superadmin')->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports');
         Route::get('/reports/history', [ReportController::class, 'getOrderHistory'])->name('reports.history');
         Route::get('/reports/categories', [ReportController::class, 'getCategories'])->name('reports.categories');
@@ -70,7 +70,7 @@ Route::middleware(['role'])->group(function () {
     });
     
     // Users Management - Admin & Superadmin
-    Route::middleware('role:admin')->prefix('users')->name('users.')->group(function () {
+    Route::middleware('role:admin, superadmin')->prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/list', [UserController::class, 'getUsers'])->name('list');
         Route::post('/', [UserController::class, 'store'])->name('store');

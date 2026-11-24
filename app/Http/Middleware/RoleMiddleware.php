@@ -31,7 +31,7 @@ class RoleMiddleware
         }
 
        
-        if (in_array($userRole, ['admin', 'superadmin'], true)){
+        if (in_array($userRole, ['admin', 'superadmin', 'manager'], true)){
             return $next($request);
         }
 
