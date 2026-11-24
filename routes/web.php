@@ -9,6 +9,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BackupController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -58,6 +59,15 @@ Route::middleware(['role'])->group(function () {
         Route::post('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.exportPdf');
         });
 
+
+    Route::prefix('backup')->name('backup.')->group(function () {
+        Route::get('/', [BackupController::class, 'index'])->name('index');
+        Route::post('/export', [BackupController::class, 'export'])->name('export');
+        Route::post('/snapshot', [BackupController::class, 'createSnapshot'])->name('snapshot');
+        Route::get('/snapshot/{filename}/download', [BackupController::class, 'downloadSnapshot'])->name('downloadSnapshot');
+        Route::delete('/snapshot/{filename}', [BackupController::class, 'deleteSnapshot'])->name('deleteSnapshot');
+        Route::post('/restore', [BackupController::class, 'restore'])->name('restore');
+    });
     
     // Users Management - Admin & Superadmin
     Route::middleware('role:admin')->prefix('users')->name('users.')->group(function () {
@@ -66,6 +76,8 @@ Route::middleware(['role'])->group(function () {
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::put('/{id}', [UserController::class, 'update'])->name('update');
         Route::patch('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle');
+
+        
     });
 
     // Profile Settings - accessible to all authenticated users

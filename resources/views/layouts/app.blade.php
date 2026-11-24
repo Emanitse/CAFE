@@ -6,7 +6,6 @@
     <title>Cafe Ordering System</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/css/mainlayout.css', 'resources/js/app.js'])
-    
 </head>
 <body>
     <!-- Mobile header -->
@@ -28,20 +27,29 @@
                 </div>
             </div>
             <h5 class="text-center mb-5 text-white fw-bold nav-text">Cafe Ordering System</h5>
+
             <ul class="nav nav-pills flex-column mb-auto">
                 <!-- All authenticated users -->
                 <li class="nav-item mb-1"><a href="/home" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-text">Home</span></a></li>
                 <li class="nav-item mb-1"><a href="/orders" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="nav-text">Orders</span></a></li>
 
-                <!-- Admin only links -->
+                <!-- Admin & Superadmin only links -->
                 @if(in_array(session('role'), ['admin', 'superadmin']))
                     <li class="nav-item mb-1"><a href="/menu" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg><span class="nav-text">Menu</span></a></li>
                     <li class="nav-item mb-1"><a href="/categories" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg><span class="nav-text">Categories</span></a></li>
                     <li class="nav-item mb-1"><a href="/reports" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span class="nav-text">Reports</span></a></li>
                     <li class="nav-item mb-1"><a href="/users" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-text">Users</span></a></li>
+                    <li class="nav-item mb-1">
+                        <a href="/backup" class="nav-link fw-bold text-white d-flex align-items-center {{ request()->is('backup*') ? 'active' : '' }}">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                            </svg>
+                            <span class="nav-text">System Backup</span>
+                        </a>
+                    </li>
                 @endif
-            </ul>
-            
             </ul>
 
             <!-- Logged-in User Profile Link -->
@@ -68,7 +76,6 @@
                     </div>
                 </a>
             </div>
-
 
             <hr class="text-white border-2 opacity-50 nav-text">
             <div class="mt-2"><a href="{{ route('logout') }}" class="nav-link text-white fw-bold d-flex align-items-center justify-content-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg><span class="nav-text">Logout</span></a></div>
