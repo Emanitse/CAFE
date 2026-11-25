@@ -35,12 +35,13 @@
                             <th class="px-4 py-3 text-muted">Email</th>
                             <th class="px-4 py-3 text-muted">Role</th>
                             <th class="px-4 py-3 text-muted">Status</th>
+                            <th class="px-4 py-3 text-muted">2FA</th>
                             <th class="px-4 py-3 text-muted text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="users-table-body">
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-5">Loading users...</td>
+                            <td colspan="7" class="text-center text-muted py-5">Loading users...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -147,6 +148,23 @@
                 <div class="d-flex justify-content-center gap-2">
                     <button type="button" class="btn btn-light fw-bold px-3" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" id="confirmToggleUserBtn" class="btn btn-danger fw-bold px-3">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SUPERADMIN RESET 2FA CONFIRMATION MODAL -->
+<div class="modal fade" id="reset2faModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow text-center p-3">
+            <div class="modal-body">
+                <input type="hidden" id="reset2faUserID">
+                <h5 class="fw-bold mb-2">Reset User 2FA?</h5>
+                <p class="text-muted small mb-4" id="reset2faModalMessage"></p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-light fw-bold px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmReset2faBtn" class="btn btn-warning fw-bold px-3">Reset 2FA</button>
                 </div>
             </div>
         </div>

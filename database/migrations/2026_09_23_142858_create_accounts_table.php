@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('username');
             $table->string('email')->unique();
             $table->string('password');
+            $table->text('two_factor_secret')->nullable();
+            $table->boolean('two_factor_enabled')->default(false);
+            $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->string('role');
             $table->boolean('is_active')->default(true);
             $table->timestamps();

@@ -18,6 +18,11 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
+// Two-Factor Authentication Login Challenge
+Route::get('/login/2fa', [AuthController::class, 'showTwoFactorChallenge'])->name('login.2fa');
+Route::post('/login/2fa', [AuthController::class, 'verifyTwoFactorChallenge'])->name('login.2fa.verify');
+Route::post('/login/2fa/cancel', [AuthController::class, 'cancelTwoFactorChallenge'])->name('login.2fa.cancel');
+
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 
@@ -57,10 +62,10 @@ Route::middleware(['role'])->group(function () {
         Route::get('/reports/categories', [ReportController::class, 'getCategories'])->name('reports.categories');
         Route::get('/reports/items', [ReportController::class, 'getItems'])->name('reports.items');
         Route::post('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.exportPdf');
-        });
+    });
 
-
-    Route::prefix('backup')->name('backup.')->group(function () {
+    // System Backup & Restore - Admin & Superadmin only
+    Route::middleware('role:admin, superadmin')->prefix('backup')->name('backup.')->group(function () {
         Route::get('/', [BackupController::class, 'index'])->name('index');
         Route::post('/export', [BackupController::class, 'export'])->name('export');
         Route::post('/snapshot', [BackupController::class, 'createSnapshot'])->name('snapshot');
@@ -76,14 +81,16 @@ Route::middleware(['role'])->group(function () {
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::put('/{id}', [UserController::class, 'update'])->name('update');
         Route::patch('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle');
-
-        
+        Route::patch('/{id}/reset-2fa', [UserController::class, 'resetTwoFactor'])->name('reset2fa');
     });
 
     // Profile Settings - accessible to all authenticated users
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'index'])->name('index');
         Route::put('/update', [ProfileController::class, 'update'])->name('update');
+        Route::post('/2fa/setup', [ProfileController::class, 'setupTwoFactor'])->name('2fa.setup');
+        Route::post('/2fa/confirm', [ProfileController::class, 'confirmTwoFactor'])->name('2fa.confirm');
+        Route::post('/2fa/disable', [ProfileController::class, 'disableTwoFactor'])->name('2fa.disable');
     });
 
     // Logout 

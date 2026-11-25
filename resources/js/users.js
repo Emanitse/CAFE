@@ -9,12 +9,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const addModal = new bootstrap.Modal(document.getElementById('addUserModal'));
     const editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
     const toggleModal = new bootstrap.Modal(document.getElementById('toggleUserModal'));
+    const reset2faModal = new bootstrap.Modal(document.getElementById('reset2faModal'));
 
     const addAlert = document.getElementById('addUserAlert');
     const editAlert = document.getElementById('editUserAlert');
 
     const PER_PAGE = 10;
     let allUsers = [];
+    let canReset2fa = false;
     let currentPage = 1;
     let originalUser = { username: '', email: '' };
     let searchTimeout = null;
@@ -49,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (allUsers.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-5">No user accounts found.</td>
+                    <td colspan="7" class="text-center text-muted py-5">No user accounts found.</td>
                 </tr>
             `;
             return;
@@ -67,8 +69,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? `<span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>`
                 : `<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Deactivated</span>`;
 
+            const twoFactorBadge = user.two_factor_enabled
+                ? `<span class="badge bg-success-subtle text-success border border-success-subtle">Enabled</span>`
+                : `<span class="badge bg-light text-muted border">Off</span>`;
+
             const selfTag = user.is_self
                 ? `<span class="badge bg-light text-dark border ms-1">You</span>`
+                : '';
+
+            const reset2faBtn = (canReset2fa && user.two_factor_enabled && !user.is_self)
+                ? `<button class="btn btn-sm btn-outline-warning text-dark reset-2fa-btn me-1"
+                           data-id="${user.accountID}"
+                           data-name="${user.username}">
+                       Reset 2FA
+                   </button>`
                 : '';
 
             const toggleBtn = user.is_self
@@ -86,7 +100,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         <span class="badge ${roleBadgeClass} text-capitalize">${user.role}</span>
                     </td>
                     <td class="px-4">${statusBadge}</td>
+                    <td class="px-4">${twoFactorBadge}</td>
                     <td class="px-4 text-end text-nowrap">
+                        ${reset2faBtn}
                         <button class="btn btn-sm btn-outline-secondary edit-user-btn me-1"
                                 data-id="${user.accountID}"
                                 data-username="${user.username}"
@@ -117,12 +133,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (data.success) {
                 allUsers = data.users;
+                canReset2fa = Boolean(data.can_reset_2fa);
                 renderUsersPage();
             }
         } catch (err) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center text-danger py-4">Failed to load users.</td>
+                    <td colspan="7" class="text-center text-danger py-4">Failed to load users.</td>
                 </tr>
             `;
         }
@@ -179,7 +196,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
                 addModal.hide();
                 await loadUsers(false);
-                // Jump to the last page so the newly added user is immediately visible
                 currentPage = Math.max(1, Math.ceil(allUsers.length / PER_PAGE));
                 renderUsersPage();
             }
@@ -240,11 +256,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             toggleModal.show();
         }
+
+        if (e.target.classList.contains('reset-2fa-btn')) {
+            const btn = e.target;
+            document.getElementById('reset2faUserID').value = btn.dataset.id;
+            document.getElementById('reset2faModalMessage').innerHTML =
+                `Disable Two-Factor Authentication for <strong>${btn.dataset.name}</strong>? They will be able to sign in with just their password until they re-enable 2FA.`;
+            reset2faModal.show();
+        }
     });
 
     // 6. Save User Edits (Keeps current page intact)
     document.getElementById('saveUserChangesBtn').addEventListener('click', async function () {
-        hideEditAlert();
+        hideAlert(editAlert);
 
         const id = document.getElementById('editUserID').value;
         const username = document.getElementById('editUsername').value.trim();
@@ -252,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const password = document.getElementById('editPassword').value;
 
         if (!username || !email) {
-            return showEditAlert('Username and email are required.');
+            return showAlert(editAlert, 'Username and email are required.');
         }
 
         if (
@@ -260,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
             email.toLowerCase() === originalUser.email.toLowerCase() &&
             password === ''
         ) {
-            showEditAlert('No changes were made.', 'secondary');
+            showAlert(editAlert, 'No changes were made.', 'secondary');
             setTimeout(() => editModal.hide(), 700);
             return;
         }
@@ -285,11 +309,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const firstError = data.errors
                     ? Object.values(data.errors)[0][0]
                     : (data.message || 'Validation failed.');
-                return showEditAlert(firstError);
+                return showAlert(editAlert, firstError);
             }
 
             if (data.unchanged) {
-                showEditAlert(data.message, 'secondary');
+                showAlert(editAlert, data.message, 'secondary');
                 setTimeout(() => editModal.hide(), 700);
                 return;
             }
@@ -299,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 loadUsers(false);
             }
         } catch (err) {
-            showEditAlert('An error occurred while updating the user.');
+            showAlert(editAlert, 'An error occurred while updating the user.');
         } finally {
             this.disabled = false;
             this.textContent = 'Save Changes';
@@ -336,6 +360,37 @@ document.addEventListener('DOMContentLoaded', function () {
         } finally {
             this.disabled = false;
             this.textContent = originalText;
+        }
+    });
+
+    // 8. Confirm Superadmin 2FA Reset
+    document.getElementById('confirmReset2faBtn').addEventListener('click', async function () {
+        const id = document.getElementById('reset2faUserID').value;
+        this.disabled = true;
+        this.textContent = 'Resetting...';
+
+        try {
+            const res = await fetch(`/users/${id}/reset-2fa`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                }
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                reset2faModal.hide();
+                loadUsers(false);
+            } else {
+                alert(data.message || 'Failed to reset 2FA.');
+            }
+        } catch (err) {
+            alert('Error resetting Two-Factor Authentication.');
+        } finally {
+            this.disabled = false;
+            this.textContent = 'Reset 2FA';
         }
     });
 

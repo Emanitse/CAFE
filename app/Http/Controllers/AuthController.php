@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Account;
+use App\Services\TotpService;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -14,6 +16,10 @@ class AuthController extends Controller
 
     public function showLogin()
     {
+        if (session()->has('2fa_pending_accountID')) {
+            return redirect()->route('login.2fa');
+        }
+
         return view('login');
     }
 
@@ -44,7 +50,6 @@ class AuthController extends Controller
             $attempts = Cache::get($lockoutKey, 0);
             $remaining = max(0, $this->maxAttempts - $attempts);
             
-          
             if ($attempts >= $this->maxAttempts) {
                 $lockoutEndTime = time() + $this->lockoutDuration;
                 return back()->withErrors([
@@ -68,12 +73,100 @@ class AuthController extends Controller
         $request->session()->forget('lockout_end_time');
         $request->session()->regenerate();
 
+        // Check if 2FA is active on this account
+        if ($account->two_factor_enabled && !empty($account->two_factor_secret)) {
+            $request->session()->put('2fa_pending_accountID', $account->accountID);
+            $request->session()->put('2fa_pending_email', $account->email);
+
+            return redirect()->route('login.2fa');
+        }
+
+        $this->completeLoginSession($request, $account);
+
+        return redirect('/home');
+    }
+
+    // Display the 6-digit Microsoft Authenticator verification form
+    public function showTwoFactorChallenge(Request $request)
+    {
+        if (!$request->session()->has('2fa_pending_accountID')) {
+            return redirect()->route('login');
+        }
+
+        return view('login', [
+            'showTwoFactor' => true,
+            'pendingEmail' => $request->session()->get('2fa_pending_email'),
+        ]);
+    }
+
+    // Verify the 6-digit code and finalize login
+    public function verifyTwoFactorChallenge(Request $request, TotpService $totp)
+    {
+        $pendingAccountId = $request->session()->get('2fa_pending_accountID');
+        if (!$pendingAccountId) {
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your verification session expired. Please sign in again.',
+            ]);
+        }
+
+        $request->validate([
+            'code' => 'required|digits:6',
+        ], [
+            'code.required' => 'Please enter the 6-digit verification code.',
+            'code.digits' => 'The verification code must be 6 digits.',
+        ]);
+
+        $account = Account::withoutGlobalScope('active')->find($pendingAccountId);
+
+        if (!$account || !$account->is_active) {
+            $request->session()->forget(['2fa_pending_accountID', '2fa_pending_email']);
+            return redirect()->route('login')->withErrors([
+                'email' => 'Account not found or deactivated.',
+            ]);
+        }
+
+        // If a Superadmin reset 2FA while user was on the challenge screen, let them through
+        if (!$account->two_factor_enabled || empty($account->two_factor_secret)) {
+            $request->session()->forget(['2fa_pending_accountID', '2fa_pending_email']);
+            $request->session()->regenerate();
+            $this->completeLoginSession($request, $account);
+            return redirect('/home');
+        }
+
+        try {
+            $secret = Crypt::decryptString($account->two_factor_secret);
+        } catch (\Throwable $e) {
+            return back()->withErrors([
+                'code' => 'Unable to read 2FA secret. Ask a Superadmin to reset your 2FA.',
+            ]);
+        }
+
+        if (!$totp->verifyCode($secret, $request->code)) {
+            return back()->withErrors([
+                'code' => 'Invalid 6-digit code. Please check Microsoft Authenticator and try again.',
+            ]);
+        }
+
+        $request->session()->forget(['2fa_pending_accountID', '2fa_pending_email']);
+        $request->session()->regenerate();
+        $this->completeLoginSession($request, $account);
+
+        return redirect('/home');
+    }
+
+    // Cancel pending 2FA challenge and return to email/password login
+    public function cancelTwoFactorChallenge(Request $request)
+    {
+        $request->session()->forget(['2fa_pending_accountID', '2fa_pending_email']);
+        return redirect()->route('login');
+    }
+
+    protected function completeLoginSession(Request $request, Account $account): void
+    {
         $request->session()->put('accountID', $account->accountID);
         $request->session()->put('email', $account->email);
         $request->session()->put('username', $account->username);
         $request->session()->put('role', $account->role);
-
-        return redirect('/home');
     }
 
     public function showRegister()
@@ -180,7 +273,6 @@ class AuthController extends Controller
             Cache::put($key . ':locked', true, $this->lockoutDuration);
             Cache::put($key . ':ttl', $this->lockoutDuration, $this->lockoutDuration);
             
-          
             $lockoutEndTime = time() + $this->lockoutDuration;
             session(["lockout_end_time_{$key}" => $lockoutEndTime]);
         }

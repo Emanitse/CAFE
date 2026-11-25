@@ -48,14 +48,16 @@ class UserController extends Controller
         }
 
         $users = $query->orderBy('accountID', 'asc')
-            ->get(['accountID', 'username', 'email', 'role', 'is_active'])
+            ->get(['accountID', 'username', 'email', 'role', 'is_active', 'two_factor_enabled'])
             ->map(function ($user) use ($currentUserId) {
                 $user->is_self = ($user->accountID == $currentUserId);
+                $user->two_factor_enabled = (bool) $user->two_factor_enabled;
                 return $user;
             });
 
         return response()->json([
             'success' => true,
+            'can_reset_2fa' => ($currentRole === 'superadmin'),
             'users' => $users,
         ]);
     }
@@ -108,6 +110,7 @@ class UserController extends Controller
                 'email' => $account->email,
                 'role' => $account->role,
                 'is_active' => $account->is_active,
+                'two_factor_enabled' => false,
             ],
         ]);
     }
@@ -234,6 +237,37 @@ class UserController extends Controller
             'success' => true,
             'is_active' => $account->is_active,
             'message' => $account->is_active ? 'Account re-activated.' : 'Account deactivated.',
+        ]);
+    }
+
+    // Superadmin-only emergency reset for a user's Two-Factor Authentication
+    public function resetTwoFactor($id)
+    {
+        if (session('role') !== 'superadmin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only a Superadmin can reset Two-Factor Authentication.',
+            ], 403);
+        }
+
+        $account = Account::withoutGlobalScope('active')->findOrFail($id);
+
+        if (!$account->two_factor_enabled) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Two-Factor Authentication is already disabled for this account.',
+            ], 422);
+        }
+
+        $account->update([
+            'two_factor_secret' => null,
+            'two_factor_enabled' => false,
+            'two_factor_confirmed_at' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Two-Factor Authentication has been reset for {$account->username}.",
         ]);
     }
 }
