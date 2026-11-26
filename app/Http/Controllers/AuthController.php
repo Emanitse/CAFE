@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Account;
+use App\Services\AuditLogger;
 use App\Services\TotpService;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,11 @@ class AuthController extends Controller
             $lockoutData = $this->getLockoutData($lockoutKey);
             $seconds = max(0, $lockoutData['ttl'] ?? $this->lockoutDuration);
             $lockoutEndTime = $lockoutData['end_time'] ?? (time() + $seconds);
+
+            AuditLogger::logAccess('Account Lockout', 'warning', $request, [
+                'email' => $request->email,
+                'details' => "Login attempt blocked during active lockout ({$seconds}s remaining).",
+            ]);
             
             return back()->withErrors([
                 'email' => "Too many failed attempts. Please try again in {$seconds} seconds."
@@ -52,11 +58,30 @@ class AuthController extends Controller
             
             if ($attempts >= $this->maxAttempts) {
                 $lockoutEndTime = time() + $this->lockoutDuration;
+
+                AuditLogger::logAccess('Account Locked', 'warning', $request, [
+                    'accountID' => $account?->accountID,
+                    'username' => $account?->username,
+                    'email' => $request->email,
+                    'role' => $account?->role,
+                    'details' => "Account locked for {$this->lockoutDuration}s after {$attempts} failed login attempts.",
+                ]);
+
                 return back()->withErrors([
                     'email' => "Too many failed attempts. Please try again in {$this->lockoutDuration} seconds."
                 ])->withInput($request->only('email'))
                   ->with('lockout_end_time', $lockoutEndTime);
             }
+
+            AuditLogger::logAccess('Login Failed', 'failed', $request, [
+                'accountID' => $account?->accountID,
+                'username' => $account?->username,
+                'email' => $request->email,
+                'role' => $account?->role,
+                'details' => $account
+                    ? "Incorrect password entered ({$remaining} attempts remaining)."
+                    : "Unrecognized email address ({$remaining} attempts remaining).",
+            ]);
             
             return back()->withErrors([
                 'email' => "Invalid email or password. {$remaining} attempts remaining."
@@ -64,6 +89,14 @@ class AuthController extends Controller
         }
 
         if (!$account->is_active) {
+            AuditLogger::logAccess('Deactivated Login Attempt', 'failed', $request, [
+                'accountID' => $account->accountID,
+                'username' => $account->username,
+                'email' => $account->email,
+                'role' => $account->role,
+                'details' => 'Login blocked because account is deactivated.',
+            ]);
+
             return back()->withErrors([
                 'email' => 'This account has been deactivated.'
             ])->withInput($request->only('email'));
@@ -78,15 +111,30 @@ class AuthController extends Controller
             $request->session()->put('2fa_pending_accountID', $account->accountID);
             $request->session()->put('2fa_pending_email', $account->email);
 
+            AuditLogger::logAccess('2FA Challenge Prompted', 'warning', $request, [
+                'accountID' => $account->accountID,
+                'username' => $account->username,
+                'email' => $account->email,
+                'role' => $account->role,
+                'details' => 'Password verified; awaiting 6-digit authenticator code.',
+            ]);
+
             return redirect()->route('login.2fa');
         }
 
         $this->completeLoginSession($request, $account);
 
+        AuditLogger::logAccess('Login Success', 'success', $request, [
+            'accountID' => $account->accountID,
+            'username' => $account->username,
+            'email' => $account->email,
+            'role' => $account->role,
+            'details' => 'Authenticated with email and password.',
+        ]);
+
         return redirect('/home');
     }
 
-    // Display the 6-digit Microsoft Authenticator verification form
     public function showTwoFactorChallenge(Request $request)
     {
         if (!$request->session()->has('2fa_pending_accountID')) {
@@ -99,7 +147,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // Verify the 6-digit code and finalize login
     public function verifyTwoFactorChallenge(Request $request, TotpService $totp)
     {
         $pendingAccountId = $request->session()->get('2fa_pending_accountID');
@@ -125,11 +172,19 @@ class AuthController extends Controller
             ]);
         }
 
-        // If a Superadmin reset 2FA while user was on the challenge screen, let them through
         if (!$account->two_factor_enabled || empty($account->two_factor_secret)) {
             $request->session()->forget(['2fa_pending_accountID', '2fa_pending_email']);
             $request->session()->regenerate();
             $this->completeLoginSession($request, $account);
+
+            AuditLogger::logAccess('Login Success', 'success', $request, [
+                'accountID' => $account->accountID,
+                'username' => $account->username,
+                'email' => $account->email,
+                'role' => $account->role,
+                'details' => '2FA was reset by Superadmin; login completed.',
+            ]);
+
             return redirect('/home');
         }
 
@@ -142,6 +197,14 @@ class AuthController extends Controller
         }
 
         if (!$totp->verifyCode($secret, $request->code)) {
+            AuditLogger::logAccess('2FA Failed', 'failed', $request, [
+                'accountID' => $account->accountID,
+                'username' => $account->username,
+                'email' => $account->email,
+                'role' => $account->role,
+                'details' => 'Entered an invalid 6-digit authenticator code.',
+            ]);
+
             return back()->withErrors([
                 'code' => 'Invalid 6-digit code. Please check Microsoft Authenticator and try again.',
             ]);
@@ -151,12 +214,30 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $this->completeLoginSession($request, $account);
 
+        AuditLogger::logAccess('2FA Verified & Login', 'success', $request, [
+            'accountID' => $account->accountID,
+            'username' => $account->username,
+            'email' => $account->email,
+            'role' => $account->role,
+            'details' => 'Completed 2-step verification via authenticator app.',
+        ]);
+
         return redirect('/home');
     }
 
-    // Cancel pending 2FA challenge and return to email/password login
     public function cancelTwoFactorChallenge(Request $request)
     {
+        $pendingId = $request->session()->get('2fa_pending_accountID');
+        $pendingEmail = $request->session()->get('2fa_pending_email');
+
+        if ($pendingId || $pendingEmail) {
+            AuditLogger::logAccess('2FA Cancelled', 'warning', $request, [
+                'accountID' => $pendingId,
+                'email' => $pendingEmail,
+                'details' => 'User cancelled 2FA challenge and returned to login.',
+            ]);
+        }
+
         $request->session()->forget(['2fa_pending_accountID', '2fa_pending_email']);
         return redirect()->route('login');
     }
@@ -182,6 +263,13 @@ class AuthController extends Controller
         $captchaValid = $this->validateCaptcha($request);
         if (!$captchaValid) {
             $this->generateCaptcha();
+
+            AuditLogger::logAccess('Registration Failed', 'failed', $request, [
+                'username' => $request->username,
+                'email' => $request->email,
+                'details' => 'Incorrect CAPTCHA answer submitted during registration.',
+            ]);
+
             return back()->withErrors([
                 'captcha' => 'Incorrect CAPTCHA answer. Please try again.'
             ])->withInput($request->only('username', 'email'));
@@ -195,6 +283,14 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
+        AuditLogger::logAccess('Account Registered', 'success', $request, [
+            'accountID' => $account->accountID,
+            'username' => $account->username,
+            'email' => $account->email,
+            'role' => $account->role,
+            'details' => 'New staff account registered via self-registration.',
+        ]);
+
         $this->generateCaptcha();
 
         return redirect()->route('login')->with('success', 'Registration successful! Please log in.');
@@ -202,6 +298,12 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        if (session()->has('accountID')) {
+            AuditLogger::logAccess('Logout', 'success', $request, [
+                'details' => 'User signed out of the system.',
+            ]);
+        }
+
         $request->session()->flush();
         $request->session()->regenerate();
         return redirect('/login')->with('status', 'You have been logged out successfully.')

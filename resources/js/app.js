@@ -7,3 +7,4 @@ import "./users.js";
 import "./paginator.js";
 import "./profile.js";
 import "./backup.js";
+import "./audit_trail.js";
