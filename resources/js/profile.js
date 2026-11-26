@@ -13,8 +13,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const newPasswordInput = document.getElementById('newPassword');
     const confirmPasswordInput = document.getElementById('confirmNewPassword');
 
+    const avatarImg = document.getElementById('profileAvatarImg');
+    const avatarInitial = document.getElementById('profileAvatarInitial');
+    const pictureInput = document.getElementById('profilePictureInput');
+    const removePictureBtn = document.getElementById('removeProfilePictureBtn');
+
     const sidebarUsername = document.getElementById('sidebarUsername');
     const sidebarInitial = document.getElementById('sidebarProfileInitial');
+    const sidebarAvatarImg = document.getElementById('sidebarProfileImg');
+
+    let removePictureFlag = false;
 
     function showAlert(box, message, type = 'danger') {
         box.className = `alert alert-${type} py-2 small mb-3`;
@@ -27,8 +35,53 @@ document.addEventListener('DOMContentLoaded', function () {
         box.textContent = '';
     }
 
+    function setAvatarDisplay(imgEl, initialEl, url, initialChar) {
+        if (initialEl) initialEl.textContent = initialChar;
+        if (url) {
+            if (imgEl) {
+                imgEl.src = url;
+                imgEl.classList.remove('d-none');
+            }
+            if (initialEl) initialEl.classList.add('d-none');
+        } else {
+            if (imgEl) {
+                imgEl.src = '';
+                imgEl.classList.add('d-none');
+            }
+            if (initialEl) initialEl.classList.remove('d-none');
+        }
+    }
+
+    // Preview selected profile picture immediately
+    pictureInput?.addEventListener('change', function () {
+        hideAlert(alertBox);
+        const file = this.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            this.value = '';
+            return showAlert(alertBox, 'Profile picture must not exceed 2MB.');
+        }
+
+        removePictureFlag = false;
+        const previewUrl = URL.createObjectURL(file);
+        const initial = (usernameInput.value.trim().charAt(0) || 'U').toUpperCase();
+        setAvatarDisplay(avatarImg, avatarInitial, previewUrl, initial);
+        removePictureBtn?.classList.remove('d-none');
+    });
+
+    // Mark profile picture for removal
+    removePictureBtn?.addEventListener('click', function () {
+        hideAlert(alertBox);
+        pictureInput.value = '';
+        removePictureFlag = true;
+        const initial = (usernameInput.value.trim().charAt(0) || 'U').toUpperCase();
+        setAvatarDisplay(avatarImg, avatarInitial, null, initial);
+        this.classList.add('d-none');
+    });
+
     // ---------------------------------------------------------
-    // 1. SAVE ACCOUNT CREDENTIALS
+    // 1. SAVE ACCOUNT CREDENTIALS & PROFILE PICTURE
     // ---------------------------------------------------------
     saveBtn.addEventListener('click', async function () {
         hideAlert(alertBox);
@@ -47,24 +100,33 @@ document.addEventListener('DOMContentLoaded', function () {
             return showAlert(alertBox, 'New password confirmation does not match.');
         }
 
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('username', username);
+        formData.append('email', email);
+        if (current_password) formData.append('current_password', current_password);
+        if (new_password) {
+            formData.append('new_password', new_password);
+            formData.append('new_password_confirmation', new_password_confirmation);
+        }
+        if (pictureInput?.files[0]) {
+            formData.append('profile_picture', pictureInput.files[0]);
+        }
+        if (removePictureFlag) {
+            formData.append('remove_picture', '1');
+        }
+
         this.disabled = true;
         this.textContent = 'SAVING...';
 
         try {
             const res = await fetch('/profile/update', {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    current_password,
-                    new_password,
-                    new_password_confirmation,
-                })
+                body: formData,
             });
 
             const data = await res.json();
@@ -86,13 +148,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 currentPasswordInput.value = '';
                 newPasswordInput.value = '';
                 confirmPasswordInput.value = '';
+                if (pictureInput) pictureInput.value = '';
+                removePictureFlag = false;
 
                 const initial = data.user.username.charAt(0).toUpperCase();
                 document.getElementById('cardDisplayUsername').textContent = data.user.username;
-                document.getElementById('profileAvatarInitial').textContent = initial;
+
+                setAvatarDisplay(avatarImg, avatarInitial, data.user.avatar_url, initial);
+                if (data.user.avatar_url) {
+                    removePictureBtn?.classList.remove('d-none');
+                } else {
+                    removePictureBtn?.classList.add('d-none');
+                }
 
                 if (sidebarUsername) sidebarUsername.textContent = data.user.username;
-                if (sidebarInitial) sidebarInitial.textContent = initial;
+                setAvatarDisplay(sidebarAvatarImg, sidebarInitial, data.user.avatar_url, initial);
             }
         } catch (err) {
             showAlert(alertBox, 'An error occurred while updating your profile.');
@@ -139,7 +209,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Open Enable 2FA Modal & Generate QR Code
     openEnable2faBtn?.addEventListener('click', async function () {
         hideAlert(twoFactorAlert);
         hideAlert(enable2faModalAlert);
@@ -172,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Verify 6-Digit Code & Activate 2FA
     confirmEnable2faBtn?.addEventListener('click', async function () {
         hideAlert(enable2faModalAlert);
         const code = confirmCodeInput.value.trim();
@@ -214,7 +282,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Open Disable 2FA Modal
     openDisable2faBtn?.addEventListener('click', function () {
         hideAlert(twoFactorAlert);
         hideAlert(disable2faModalAlert);
@@ -222,7 +289,6 @@ document.addEventListener('DOMContentLoaded', function () {
         disable2faModal.show();
     });
 
-    // Confirm Disable 2FA
     confirmDisable2faBtn?.addEventListener('click', async function () {
         hideAlert(disable2faModalAlert);
         const password = disablePasswordInput.value;

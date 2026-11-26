@@ -119,7 +119,7 @@
         <table class="header-table">
             <tr>
                 <td>
-                    <div class="brand-title">Cafe Ordering System</div>
+                    <div class="brand-title">{{ $systemName }}</div>
                     <div class="report-subtitle">Sales Report &amp; Transaction Audit Trail</div>
                 </td>
                 <td class="meta-info">

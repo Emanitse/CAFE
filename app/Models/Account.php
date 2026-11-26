@@ -10,8 +10,10 @@ class Account extends Model
     protected $table = 'accounts';
     protected $primaryKey = 'accountID';
 
-    protected $fillable = ['username',
+    protected $fillable = [
+        'username',
         'email',
+        'profile_picture',
         'password',
         'role',
         'is_active',

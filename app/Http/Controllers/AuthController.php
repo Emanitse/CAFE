@@ -248,6 +248,7 @@ class AuthController extends Controller
         $request->session()->put('email', $account->email);
         $request->session()->put('username', $account->username);
         $request->session()->put('role', $account->role);
+        $request->session()->put('profile_picture', $account->profile_picture);
     }
 
     public function showRegister()

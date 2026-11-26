@@ -7,7 +7,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
             <h3 class="fw-bold text-dark mb-0">Dashboard Overview</h3>
-            <small class="text-muted">Welcome back, {{ session('username') ?? 'Staff' }} — live cafe performance metrics</small>
+            <small class="text-muted">Welcome back, {{ session('username') ?? 'Staff' }} — {{ $systemName }} performance metrics</small>
         </div>
         <button type="button" id="refreshDashboardBtn" class="btn bg-coffee text-white fw-bold shadow-sm px-3">
             Refresh Data

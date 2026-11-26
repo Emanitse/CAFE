@@ -1,27 +1,52 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $hasAvatar = $account->profile_picture && file_exists(public_path($account->profile_picture));
+    $avatarUrl = $hasAvatar ? asset($account->profile_picture) : '';
+@endphp
+
 <div class="container-fluid pb-4">
 
     <div class="mb-4">
         <h3 class="fw-bold text-dark mb-0">Profile &amp; Settings</h3>
-        <small class="text-muted">Manage your account credentials, password, and two-factor authentication</small>
+        <small class="text-muted">Manage your profile picture, account credentials, password, and two-factor authentication</small>
     </div>
 
     <div class="row justify-content-center g-4">
-        <!-- Account Credentials Card -->
+        <!-- Account Credentials & Profile Picture Card -->
         <div class="col-12 col-lg-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom py-3 d-flex align-items-center gap-3">
-                    <div id="profileAvatarInitial"
-                         class="rounded-circle bg-coffee text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
-                         style="width: 48px; height: 48px; font-size: 1.25rem;">
-                        {{ strtoupper(substr($account->username, 0, 1)) }}
+                <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="position-relative flex-shrink-0" style="width: 64px; height: 64px;">
+                            <img id="profileAvatarImg"
+                                 src="{{ $avatarUrl }}"
+                                 alt="Profile Picture"
+                                 class="rounded-circle object-fit-cover border shadow-sm w-100 h-100 {{ $hasAvatar ? '' : 'd-none' }}">
+                            <div id="profileAvatarInitial"
+                                 class="rounded-circle bg-coffee text-white fw-bold d-flex align-items-center justify-content-center w-100 h-100 {{ $hasAvatar ? 'd-none' : '' }}"
+                                 style="font-size: 1.5rem;">
+                                {{ strtoupper(substr($account->username, 0, 1)) }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0" id="cardDisplayUsername">{{ $account->username }}</h6>
+                            <small class="text-muted text-capitalize d-block mb-1">{{ $account->role }} Account</small>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <label for="profilePictureInput" class="btn btn-sm btn-outline-dark fw-bold mb-0" style="cursor: pointer;">
+                                    Upload Photo
+                                </label>
+                                <input type="file" id="profilePictureInput" class="d-none" accept="image/png,image/jpeg,image/webp">
+                                <button type="button" id="removeProfilePictureBtn" class="btn btn-sm btn-outline-danger fw-bold {{ $hasAvatar ? '' : 'd-none' }}">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h6 class="fw-bold text-dark mb-0" id="cardDisplayUsername">{{ $account->username }}</h6>
-                        <small class="text-muted text-capitalize">{{ $account->role }} Account</small>
-                    </div>
+
+                    <small class="text-muted">PNG, JPG, or WEBP (Max 2MB)</small>
                 </div>
 
                 <div class="card-body p-4">

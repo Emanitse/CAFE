@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cafe Ordering System</title>
+    <title>{{ $systemName }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/css/mainlayout.css', 'resources/js/app.js'])
 </head>
@@ -11,7 +11,7 @@
     <!-- Mobile header -->
     <div class="d-md-none p-3 d-flex align-items-center shadow-sm" style="background:#5C4033;">
         <button class="btn text-white me-3 p-1" id="mobileToggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg></button>
-        <span class="text-white fw-bold fs-5">Menu</span>
+        <span class="text-white fw-bold fs-5 text-truncate">{{ $systemName }}</span>
     </div>
     <div class="sidebar-overlay d-md-none" id="overlay"></div>
 
@@ -22,27 +22,27 @@
                 <button class="btn text-white p-1" id="pcToggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg></button>
             </div>
             <div class="d-flex justify-content-center mb-4 mt-4 nav-text">
-                <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width:45px;height:45px">
-                    <img src="{{ asset('images/cofee-bean.png') }}" class="img-fluid p-1" style="max-width:90%">
+                <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow overflow-hidden" style="width:48px;height:48px">
+                    <img id="sidebarSystemLogo" src="{{ $systemLogoUrl }}" alt="{{ $systemName }}" class="img-fluid p-1" style="max-width:90%; max-height:90%; object-fit:contain;">
                 </div>
             </div>
-            <h5 class="text-center mb-5 text-white fw-bold nav-text">Cafe Ordering System</h5>
+            <h5 id="sidebarSystemName" class="text-center mb-5 text-white fw-bold nav-text px-2">{{ $systemName }}</h5>
 
             <ul class="nav nav-pills flex-column mb-auto">
                 <!-- All authenticated users -->
-                <li class="nav-item mb-1"><a href="/home" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-text">Home</span></a></li>
-                <li class="nav-item mb-1"><a href="/orders" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="nav-text">Orders</span></a></li>
+                <li class="nav-item mb-1"><a href="/home" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-text">Home</span></a></li>
+                <li class="nav-item mb-1"><a href="/orders" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="nav-text">Orders</span></a></li>
 
                 <!-- Admin, Manager & Superadmin only links -->
                 @if(in_array(session('role'), ['admin', 'superadmin', 'manager']))
-                    <li class="nav-item mb-1"><a href="/menu" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg><span class="nav-text">Menu</span></a></li>
-                    <li class="nav-item mb-1"><a href="/categories" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg><span class="nav-text">Categories</span></a></li>
+                    <li class="nav-item mb-1"><a href="/menu" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg><span class="nav-text">Menu</span></a></li>
+                    <li class="nav-item mb-1"><a href="/categories" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg><span class="nav-text">Categories</span></a></li>
                 @endif
 
                 <!-- Admin & Superadmin only links -->
                 @if(in_array(session('role'), ['admin', 'superadmin']))
-                    <li class="nav-item mb-1"><a href="/reports" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span class="nav-text">Reports</span></a></li>
-                    <li class="nav-item mb-1"><a href="/users" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-text">Users</span></a></li>
+                    <li class="nav-item mb-1"><a href="/reports" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span class="nav-text">Reports</span></a></li>
+                    <li class="nav-item mb-1"><a href="/users" class="nav-link fw-bold text-white d-flex align-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-text">Users</span></a></li>
                     <li class="nav-item mb-1">
                         <a href="/backup" class="nav-link fw-bold text-white d-flex align-items-center {{ request()->is('backup*') ? 'active' : '' }}">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0">
@@ -55,6 +55,7 @@
                     </li>
                 @endif
 
+                <!-- Superadmin ONLY links -->
                 @if(session('role') === 'superadmin')
                     <li class="nav-item mb-1">
                         <a href="/audit-trail" class="nav-link fw-bold text-white d-flex align-items-center {{ request()->is('audit-trail*') ? 'active' : '' }}">
@@ -65,6 +66,15 @@
                             <span class="nav-text">Audit Trail</span>
                         </a>
                     </li>
+                    <li class="nav-item mb-1">
+                        <a href="/system-settings" class="nav-link fw-bold text-white d-flex align-items-center {{ request()->is('system-settings*') ? 'active' : '' }}">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                            <span class="nav-text">System Settings</span>
+                        </a>
+                    </li>
                 @endif
             </ul>
 
@@ -73,13 +83,22 @@
                 $sidebarName = session('username') ?? 'User';
                 $sidebarRole = session('role') ?? 'staff';
                 $sidebarInitial = strtoupper(substr($sidebarName, 0, 1));
+                $sidebarPic = session('profile_picture');
+                $hasSidebarAvatar = $sidebarPic && file_exists(public_path($sidebarPic));
+                $sidebarAvatarUrl = $hasSidebarAvatar ? asset($sidebarPic) : '';
             @endphp
             <div class="mt-3">
-                <a href="/profile" class="nav-link text-white d-flex align-items-center p-2 rounded" title="Profile Settings">
-                    <div id="sidebarProfileInitial"
-                         class="rounded-circle bg-white text-dark fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
-                         style="width: 36px; height: 36px; font-size: 0.9rem;">
-                        {{ $sidebarInitial }}
+                <a href="/profile" class="nav-link text-white d-flex align-items-center p-2 rounded {{ request()->is('profile*') ? 'active' : '' }}" title="Profile Settings">
+                    <div class="position-relative flex-shrink-0" style="width: 36px; height: 36px;">
+                        <img id="sidebarProfileImg"
+                             src="{{ $sidebarAvatarUrl }}"
+                             alt="{{ $sidebarName }}"
+                             class="rounded-circle object-fit-cover border border-white w-100 h-100 {{ $hasSidebarAvatar ? '' : 'd-none' }}">
+                        <div id="sidebarProfileInitial"
+                             class="rounded-circle bg-white text-dark fw-bold d-flex align-items-center justify-content-center w-100 h-100 {{ $hasSidebarAvatar ? 'd-none' : '' }}"
+                             style="font-size: 0.9rem;">
+                            {{ $sidebarInitial }}
+                        </div>
                     </div>
 
                     <div class="ms-3 nav-text overflow-hidden">
@@ -94,7 +113,7 @@
             </div>
 
             <hr class="text-white border-2 opacity-50 nav-text">
-            <div class="mt-2"><a href="{{ route('logout') }}" class="nav-link text-white fw-bold d-flex align-items-center justify-content-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg><span class="nav-text">Logout</span></a></div>
+            <div class="mt-2"><a href="{{ route('logout') }}" class="nav-link text-white fw-bold d-flex align-items-center justify-content-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3 flex-shrink-0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg><span class="nav-text">Logout</span></a></div>
         </div>
 
         <!-- Main content -->

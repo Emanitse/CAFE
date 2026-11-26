@@ -11,6 +11,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\AuditTrailController;
+use App\Http\Controllers\SystemSettingsController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -85,12 +86,19 @@ Route::middleware(['role'])->group(function () {
         Route::patch('/{id}/reset-2fa', [UserController::class, 'resetTwoFactor'])->name('reset2fa');
     });
 
+    // Audit Trail - Superadmin ONLY
     Route::middleware('role:superadmin')->prefix('audit-trail')->name('audit.')->group(function () {
         Route::get('/', [AuditTrailController::class, 'index'])->name('index');
         Route::get('/access-logs', [AuditTrailController::class, 'getAccessLogs'])->name('accessLogs');
         Route::get('/error-logs', [AuditTrailController::class, 'getErrorLogs'])->name('errorLogs');
         Route::post('/export-access-pdf', [AuditTrailController::class, 'exportAccessPdf'])->name('exportAccessPdf');
         Route::post('/export-error-pdf', [AuditTrailController::class, 'exportErrorPdf'])->name('exportErrorPdf');
+    });
+
+    // System Settings - Superadmin ONLY
+    Route::middleware('role:superadmin')->prefix('system-settings')->name('system.')->group(function () {
+        Route::get('/', [SystemSettingsController::class, 'index'])->name('index');
+        Route::post('/update', [SystemSettingsController::class, 'update'])->name('update');
     });
 
     // Profile Settings - accessible to all authenticated users

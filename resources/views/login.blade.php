@@ -6,8 +6,8 @@
         
         <!---logos and stuff panel -->
         <div class="col-md-6 bg-white d-flex flex-column justify-content-center align-items-center">
-            <img src="{{ asset('images/cofee-bean.png') }}" alt="Image" style="max-width: 70%; height: auto;">
-            <h1 class="display-4 fw-bold text-brown">Cafe Ordering System</h1>
+            <img src="{{ $systemLogoUrl }}" alt="{{ $systemName }}" style="max-width: 70%; max-height: 280px; object-fit: contain;">
+            <h1 class="display-4 fw-bold text-brown text-center px-3 mt-3">{{ $systemName }}</h1>
         </div>
 
         <!-- Auth form panel -->

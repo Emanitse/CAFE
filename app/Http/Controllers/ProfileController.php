@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Models\Account;
 use App\Services\TotpService;
@@ -19,6 +20,7 @@ class ProfileController extends Controller
         session([
             'username' => $account->username,
             'email' => $account->email,
+            'profile_picture' => $account->profile_picture,
         ]);
 
         return view('components.profile', compact('account'));
@@ -42,6 +44,8 @@ class ProfileController extends Controller
                 'max:255',
                 Rule::unique('accounts', 'email')->ignore($account->accountID, 'accountID'),
             ],
+            'profile_picture' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+            'remove_picture' => 'nullable|boolean',
             'current_password' => 'nullable|required_with:new_password|string',
             'new_password' => 'nullable|string|min:8|confirmed',
         ], [
@@ -50,6 +54,9 @@ class ProfileController extends Controller
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
             'email.unique' => 'This email is already registered.',
+            'profile_picture.image' => 'Profile picture must be a valid image.',
+            'profile_picture.mimes' => 'Profile picture must be a PNG, JPG, or WEBP file.',
+            'profile_picture.max' => 'Profile picture must not exceed 2MB.',
             'current_password.required_with' => 'Please enter your current password to set a new one.',
             'new_password.min' => 'New password must be at least 8 characters.',
             'new_password.confirmed' => 'New password confirmation does not match.',
@@ -58,6 +65,8 @@ class ProfileController extends Controller
         $newUsername = trim($validated['username']);
         $newEmail = trim($validated['email']);
         $hasNewPassword = $request->filled('new_password');
+        $hasNewPicture = $request->hasFile('profile_picture');
+        $removePicture = $request->boolean('remove_picture');
 
         if ($hasNewPassword) {
             if (!Hash::check($request->current_password, $account->password)) {
@@ -77,6 +86,8 @@ class ProfileController extends Controller
 
         if (
             !$hasNewPassword &&
+            !$hasNewPicture &&
+            !$removePicture &&
             $newUsername === $account->username &&
             strcasecmp($newEmail, $account->email) === 0
         ) {
@@ -87,9 +98,33 @@ class ProfileController extends Controller
             ]);
         }
 
+        $picturePath = $account->profile_picture;
+
+        if ($removePicture) {
+            if ($picturePath && file_exists(public_path($picturePath))) {
+                @unlink(public_path($picturePath));
+            }
+            $picturePath = null;
+        } elseif ($hasNewPicture) {
+            $uploadDir = public_path('uploads/avatars');
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            if ($picturePath && file_exists(public_path($picturePath))) {
+                @unlink(public_path($picturePath));
+            }
+
+            $file = $request->file('profile_picture');
+            $filename = 'avatar_' . $account->accountID . '_' . time() . '_' . Str::random(5) . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadDir, $filename);
+            $picturePath = 'uploads/avatars/' . $filename;
+        }
+
         $updateData = [
             'username' => $newUsername,
             'email' => $newEmail,
+            'profile_picture' => $picturePath,
         ];
 
         if ($hasNewPassword) {
@@ -101,7 +136,12 @@ class ProfileController extends Controller
         session([
             'username' => $account->username,
             'email' => $account->email,
+            'profile_picture' => $account->profile_picture,
         ]);
+
+        $avatarUrl = ($account->profile_picture && file_exists(public_path($account->profile_picture)))
+            ? asset($account->profile_picture)
+            : null;
 
         return response()->json([
             'success' => true,
@@ -110,11 +150,11 @@ class ProfileController extends Controller
             'user' => [
                 'username' => $account->username,
                 'email' => $account->email,
+                'avatar_url' => $avatarUrl,
             ],
         ]);
     }
 
-    // Step A: Generate a temporary TOTP secret & otpauth URI for QR scanning
     public function setupTwoFactor(TotpService $totp)
     {
         $account = Account::withoutGlobalScope('active')
@@ -133,7 +173,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    // Step B: Verify the 6-digit Microsoft Authenticator code and activate 2FA
     public function confirmTwoFactor(Request $request, TotpService $totp)
     {
         $request->validate([
@@ -175,7 +214,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    // Disable 2FA after confirming current password
     public function disableTwoFactor(Request $request)
     {
         $request->validate([

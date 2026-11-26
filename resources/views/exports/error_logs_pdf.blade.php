@@ -32,7 +32,7 @@
         <table class="header-table">
             <tr>
                 <td>
-                    <div class="brand-title">Cafe Ordering System</div>
+                    <div class="brand-title">{{ $systemName }}</div>
                     <div class="report-subtitle">Audit Trail &mdash; System &amp; Application Error Logs</div>
                 </td>
                 <td class="meta-info">
